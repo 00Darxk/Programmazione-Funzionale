@@ -1,0 +1,186 @@
+\documentclass{article}
+
+\usepackage{cancel}
+\usepackage{amsmath,amssymb}
+\usepackage[includehead,nomarginpar]{geometry}
+\usepackage{graphicx}
+\usepackage{amsfonts} 
+\usepackage{verbatim}
+\usepackage{mathrsfs}  
+\usepackage{lmodern}
+\usepackage{braket}
+\usepackage{bookmark}
+\usepackage{fancyhdr}
+\usepackage{romanbarpagenumber}
+\usepackage{minted}
+%\usepackage{subfig}
+\usepackage[italian]{babel}
+\usepackage{float}
+%\usepackage{wrapfig}
+%\usepackage[export]{adjustbox}
+\usepackage{contour}
+\usepackage[normalem]{ulem}
+\allowdisplaybreaks
+
+\setlength{\headheight}{12.0pt}
+\addtolength{\topmargin}{-12.0pt}
+\graphicspath{ {./Immagini/} }
+
+%% TODO add metadata
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    pdftitle={Appunti di Programmazione Funzionale},
+    pdfauthor={Giacomo Sturm},
+    pdfsubject={},
+    pdfkeywords={}
+}
+
+\newsavebox{\tempbox} %{\raisebox{\dimexpr.5\ht\tempbox-.5\height\relax}}
+
+
+\makeatother
+\renewcommand{\contentsname}{Indice}
+\numberwithin{equation}{subsection}
+\newcommand{\tageq}{\tag{\stepcounter{equation}\theequation}}
+\AtBeginDocument{%
+    \renewcommand{\figurename}{Fig.}
+}
+\renewcommand{\ULdepth}{1.8pt}
+\contourlength{0.6pt}
+\newcommand{\myuline}[1]{%
+    \uline{\phantom{#1}}%
+    \llap{\contour{white}{#1}}%
+}
+\fancypagestyle{link}{\fancyhf{}\renewcommand{\headrulewidth}{0pt}\fancyfoot[C]{Sorgente del file \LaTeX disponibile al seguente link: \url{https://github.com/00Darxk/Programmazione-Funzionale/}}}
+
+\begin{document}
+
+\title{%
+    \textbf{Programmazione Funzionale}  \\ 
+    \large Appunti delle Lezioni di Programmazione Funzionale \\
+    \textit{Anno Accademico: 2024/25}}
+\author{\textit{Giacomo Sturm}}
+\date{\textit{Dipartimento di Ingegneria Civile, Informatica e delle Tecnologie Aeronautiche \\
+Università degli Studi ``Roma Tre"}}
+
+\maketitle
+\thispagestyle{link}
+
+\clearpage
+
+
+\pagestyle{fancy}
+\fancyhead{}\fancyfoot{}
+\fancyhead[C]{\textit{Programmazione Funzionale - Università degli Studi ``Roma Tre"}}
+\fancyfoot[C]{\thepage}
+\pagenumbering{Roman}
+
+\tableofcontents
+
+\clearpage
+\pagenumbering{arabic}
+
+%% 2 esoneri uno aprile uno a maggio, orale 
+
+\section{Introduzione ad OCaml}
+
+La programmazione funzionale è un paradigma di programmazione estremamente potente, utilizza un metodo completamente diverso dagli altri paradigmi di programmazione. L'idea di base consiste nel considerare un programma una funzione, è un linguaggio di alto livello dichiarativo. Il programmatore infatti specifica che cosa deve essere calcolato, non come deve essere calcolato, a differenza di linguaggi imperativi.  
+Il linguaggio di programmazione pià funzionale è Haskell, nel corso verrà usato il linguaggio Objective Caml, contiene aspetti di programmazione orientata agli oggetti. 
+%% ?? un po' bastardo
+Objective Caml appartiene alla famiglia \textit{Meta Language} ML sviluppata dall'INRIA in Francia dal 1984. 
+Dietro un linguaggio c'è un modello di calcolo che determina le operazioni eseguibili ed anche lo stile di programmazione. 
+Si basa sul lambda calcolo, un linguaggio Turing completo, estremamente semplice. 
+
+I tre costrutti fondamentali sono applicazioni, composizione e ricorsione. Su alcune distribuzioni di Linux l'interprete OCaml è preinstallato, ed è possibile interagirci digitando il comando \verb|ocaml| su un terminale:
+\begin{minted}{ocaml}
+    prompt> ocaml
+    OCaml version x.x.x
+    Enter #help;; for help.
+
+    #
+\end{minted}
+
+Il compilatore legge un'espressione o una dichiarazione, terminata dalla sequenza \verb|;;|, in seguito calcola il valore, deducendo i tipi delle variabili utilizzate, e restituisce la soluzione a schermo. 
+Non c'è bisogno di dichiarazioni esplicite, OCaml può effettuare inferenze di tipo anche su espressioni estremamente complesse. È un linguaggio a tipizzazione statica, ogni tipo può essere determinato a tempo di compilazione. 
+
+%% TODO add tipi di base
+
+I costrutti di base sono le espressioni, non sono comandi, hanno sempre un valore ed un tipo. Il calcolo procede valutando queste espressioni, semplificandole fino ad ottenere un'espressione non più semplificabile, cioè un valore. 
+
+La forma generale di una dichiarazione consiste dalla parola chiave \verb|let| seguita dall'identificatore, a cui si assegna una certa espressione:
+\begin{minted}{ocaml}
+    # let <identificatore> = <espressione>
+\end{minted}
+
+Per specificare gli argomenti o parametri di una funzione, bisogna specificarli dopo il nome della funzione, per indicare che si tratta di una funzione ricorsiva bisogna utilizzare la parola chiave \verb|rec|, dopo \verb|let|:
+\begin{minted}{ocaml}
+    # let rec <identificatore> <parametri> = <espressione>
+\end{minted}
+
+Un ambiente è una collezione di legami tra variabili e valori, l'ambiente iniziale comprende tutte queste associazioni presenti nel modulo iniziale contenuto in \verb|Stdlib|. 
+Quando viene aggiunta ua nuova dichiarazione viene aggiunto un nuovo legame in cima a questo ambiente. Questo ambiente viene gestito come una pila, quindi dichiarazioni future sovrascrivono dichiarazioni precedenti, poiché vengono accedute prima. 
+Il valore delle variabili globali viene determinato a tempo di compilazione. Per cui è possibile modificare il valore di una variabile globale sovrascrivendola, ma altri oggetti possono comunque riferirsi alla vecchia definizione di questi valori, poiché si riferisce al tempo dove questa dichiarazione è stata inserita nell'ambiente. 
+\begin{minted}[escapeinside=||, mathescape]{ocaml}
+    # let one = 1;;
+    val one : int =  1
+    # let oneplus n = n + one;;
+    val oneplus : int |$\rightarrow$| int = <fun>
+    # let one = 2;;
+    val one = 2
+    # oneplus 1;;
+    - : int = 2
+\end{minted}
+
+Quando si effettua una definizione che non dipende dal tipo specificato dei suoi parametri, queste vengono sostituite da variabili di tipo \verb|'a|, che rappresentano un tipo generico. Per indicare che si tratta di un tipo generico viene preceduto da un'apostrofo, convenzionalmente si usano le lettere greche $\alpha$ in questo caso. 
+È possibile applicare questa dichiarazione a qualsiasi tipo. 
+
+Le funzioni sono oggetti di prima classe, hanno un proprio valore ed un tipo, quindi è possibile manipolarli, passando funzioni come argomenti ad altre funzioni. 
+\\
+Nelle espressioni di tipo si associa a destra:
+\begin{minted}[escapeinside=||, mathescape]{ocaml}
+    int |$\rightarrow$| int |$\rightarrow$| int = int |$\rightarrow$| (int |$\rightarrow$| int)
+\end{minted}
+Mentre nelle espressioni si associa a sinistra:
+\begin{minted}{ocaml}
+    (func n) m = func n m
+\end{minted}
+Per cui l'uso delle parentesi è essenziale per il buon funzionamento del codice. 
+
+Funzioni di ordine superiore sono dei costrutti che prendono come argomento o riportano come valore una funzione. In questo modo si possono realizzare semplicemente funzioni come la sommatoria, che prendono come argomento la funzione \verb|f| di cui devono effettuare la somma:
+\begin{minted}[escapeinside=||, mathescape]{ocaml}
+    # let rec sum f (lower, upper) =
+        if lower > upper then 0
+        else f lower + sum f (lower + 1, upper)
+    val sum : (int |$\rightarrow$| int) |$\rightarrow$| int * int |$\rightarrow$| int = <fun>
+\end{minted}
+
+La funzione \verb|sum| può essere applicata anche soltanto al suo primo argomento, generando una funzione di prima classe. Invece di inserire una coppia si possono inserire due elementi, \textit{currificando} la funzione, ovvero può funzionare anche con valutazione parziale, generando una funzione che si aspetta i rimanenti parametri, invece di generare un errore:
+\begin{minted}[escapeinside=||, mathescape]{ocaml}
+    # let rec sum f lower upper =
+        if lower > upper then 0
+        else f lower + sum f (lower + 1) upper;;
+    val sum : (int |$\rightarrow$| int) |$\rightarrow$| int |$\rightarrow$| int |$\rightarrow$| int = <fun>
+\end{minted}
+
+Una funzione non currificata può essere applicata parzialmente. 
+%% TODO cercare slides completare sezione funzione map
+
+In generale $f_c$ è la forma currificata di $f$ se:
+\begin{gather*}
+    f:\,t_1\times\cdots\times t_n\rightarrow t\\
+    f_c:\,t_1\rightarrow(t_2\rightarrow\cdots\rightarrow(t_n\rightarrow t)\cdots)
+\end{gather*}
+Currificando una funzione è possibile applicarla parzialmente. 
+
+Molte operazioni predefinite in OCaml sono in forma currificata. Le operazioni infisse predefinite sono in forma currificata. Per utilizzare un operatore in forma infissa si racchiude tra due parentesi tonde. Per definire degli operatori infissi si racchiudono tra parentesi nella loro definizione. 
+
+Per effettuare un'operazione di composizione il codominio della seconda funzione deve essere uguale al dominio della prima funzione. Restituisce una funzione $f$ applicata su $g$. 
+
+
+%% I TIPI
+
+Un tipo è l'insieme dei valori che può assumere, i tipi predefiniti sono i booleani, su cui sono definite le operazioni booleane \verb|not|, \verb|&&| e \texttt{||}. 
+
+
+\end{document}
