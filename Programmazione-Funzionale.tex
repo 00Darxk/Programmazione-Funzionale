@@ -3,8 +3,7 @@
 \usepackage{cancel}
 \usepackage{amsmath,amssymb}
 \usepackage[includehead,nomarginpar]{geometry}
-\usepackage{graphicx}
-\usepackage{amsfonts} 
+\usepackage{graphicx} \usepackage{amsfonts} 
 \usepackage{verbatim}
 \usepackage{mathrsfs}  
 \usepackage{lmodern}
@@ -180,7 +179,35 @@ Per effettuare un'operazione di composizione il codominio della seconda funzione
 
 %% I TIPI
 
-Un tipo è l'insieme dei valori che può assumere, i tipi predefiniti sono i booleani, su cui sono definite le operazioni booleane \verb|not|, \verb|&&| e \texttt{||}. 
+Un tipo è l'insieme dei valori che può assumere, i tipi predefiniti sono:
+\begin{itemize}
+    \item Booleani, su cui sono definite le operazioni booleane \verb|not|, \verb|&&| e \texttt{||}. 
+    \item Interi su cui sono definite le operazioni \verb|+|, \verb|-|, \verb|*|, \verb|/|, \verb|mod|, \verb|succ| e \verb|pred|.
+    \item Numeri reali \verb|float|, su cui sono definite alcune delle stesse funzioni definite sugli interi, ma per mantenere l'inferenza di tipo vengono seguiti da un punto: \verb|+.|, \verb|-.|, \verb|*.| e \verb|/.|. Oltre a queste sono definite le più importanti funzioni matematiche sui reali. 
+    \item Caratteri \verb|char|, definiti sempre tra due apici \verb|'  '|, si possono convertire in codice ASCII corrispondente e viceversa con \verb|int_of_char| e \verb|char_of_int|. 
+    \item Stringhe tra doppi apici \verb|"  "|, che possono essere concatenate con l'operatore \verb|^|, si può accedere ai singoli caratteri con la notazione puntata specificando la posizione \verb|.[i]|. 
+\end{itemize} 
+
+Se si utilizzano funzioni definite su interi su reali o viceversa, viene generato un errore, sono comunque presenti funzioni per convertire tra questi tipi, ma operazioni di casting vengono sconsigliate. 
+Gli operatori di confronto sono definiti su qualsiasi tipo, eccetto che sulle funzioni. Nella notazione di OCaml il non uguale si rappresenta come \verb|<>|. Si possono effettuare confronti tra tuple, controllando secondo l'ordine lessicografico partendo dalla prima componente. 
+
+Si possono realizzare istruzioni condizionali con il costrutto \verb|if E then F else G|, dove \verb|E| è un booleano, mentre \verb|F| e \verb|G| hanno lo stesso tipo, almeno un sottotipo in comune, e nei linguaggi ML deve essere possibile determinarlo a tempo di compilazione, sono linguaggi fortemente tipati. 
+
+Non è un costrutto di controllo come nei linguaggi imperativi, ma è un'espressione con un valore ed un tipo, il più generale tra \verb|F| e \verb|G|. Viene valutata in maniera pigra, se \verb|E| è vera, non viene valutata \verb|G|, mentre se è falsa non viene valutata \verb|F|. 
+
+Le seguenti espressioni sono quindi equivalenti:
+\begin{itemize}
+    \item \verb|E && F|: \verb|if E then F else false|.
+    \item \texttt{E || F}: \verb|if E then true else F|.
+\end{itemize}
+
+Per valutare le espressioni in linguaggi ML si utilizza la regola di calcolo \textit{call by value}, la valutazione per valore, dove si calcola il valore dell'argomento prima di applicare la funzione, invece della valutazione per nome \textit{call by name}, questa regola viene utilizzata solamente nelle espressioni condizionali ed operatori booleani.
+Se non si valutassero le espressioni booleane in modo pigro, ogni funzione ricorsiva che utilizza una funzione booleana per effettuare la ricorsione, valuterebbe all'infinito il passo ricorsivo, senza poter mai fermarsi. 
+
+
+Le coppie ordinate sono formate da due elementi divisi da una virgola tra parentesi tonde. Per rappresentare un costrutto di tipo si utilizza l'operatore \verb|*| per indicarlo. Sulle coppie si utilizzano le funzioni \verb|fst| e \verb|snd| per restituire il primo ed il secondo elemento della coppia, queste sono polimorfe, ma se vengono usate su tuple da più di due elementi restituiscono un errore.  
+
+%% TODO add esercitazione
 
 
 \end{document}
