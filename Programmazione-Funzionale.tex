@@ -208,6 +208,72 @@ Se non si valutassero le espressioni booleane in modo pigro, ogni funzione ricor
 Le coppie ordinate sono formate da due elementi divisi da una virgola tra parentesi tonde. Per rappresentare un costrutto di tipo si utilizza l'operatore \verb|*| per indicarlo. Sulle coppie si utilizzano le funzioni \verb|fst| e \verb|snd| per restituire il primo ed il secondo elemento della coppia, queste sono polimorfe, ma se vengono usate su tuple da più di due elementi restituiscono un errore.  
 
 %% TODO add esercitazione
+%% TODO add l'unico elemento del tipo unit: ()
+
+Nei linguaggi funzionali non esistono costrutti di controllo, ma il principale meccanismo di controllo è la ricorsione. 
+%% TODO add prime pagine ppt 10/3/25
+
+%% ESEMPIO di creazione di una funzione split_string: string -> int * char * int, che data una stringa rappresentante un'operazione aritmetica la divide in  un primo operando, l'operazione ed il secondo operando: split_string s = (n, op, m)
+
+%% dichiarazioni locali: let - in
+%% dichiarazione locale di una variabile
+%% valutazione di espressioni let
+%% tipo delle eccezioni exn, consente di scrivere programmi che segnalano gli errori 
+
+Esiste un insieme di eccezioni predefinite, iniziano sempre con una lettera maiuscola. Dopo che è stata dichiarata un'eccezione è anche possibile sollevarla, utilizzando la parola chiave \verb|raise|, seguita dall'identificativo dell'eccezione. 
+Se durante il calcolo di un'espressione viene sollevata un'eccezione, allora il calcolo del valore termina immediatamente generando l'eccezione. Un'eccezione può essere catturata con un costrutto simile al try-catch di Java, chiamato \verb|try|-\verb|with|. Nel \verb|try| viene inserita un'espressione da calcolare, se viene sollevata un'eccezione durante il calcolo del valore, controlla se il tipo dell'eccezione sollevata corrisponde all'eccezione presente nel costrutto \verb|with|, seguito da \verb|->| che indica un'espressione da eseguire in caso sia verificata l'eccezione. Un'espressione di tipo \verb|exn| può essere il valore di qualsiasi funzione, ed argomento di qualsiasi altra funzione, questo è un caso particolare per la tipizzazione forte. Si possono usare eccezioni predefinite di OCaml per sollevare eccezioni proprie fornendo commenti più descrittivi. 
+
+\subsection{Pattern}
+
+%% TODO add pagine ~30/50 11/3/25
+
+Quando si effettua una dichiarazione su una variabile \verb|x|, questo è un caso particolare di \textit{pattern}. La forza principale di OCaml consiste in questa abilità di \textit{pattern matching}. Un pattern è un'espressione costituita da variabili e costruttori di tipo, per i tipi introdotti fin'ora i costruttori sono tutti e olo i valori dei tipi \verb|int|, \verb|float|, \verb|bool|, \verb|char|, \verb|string|, \verb|unit|, ed i costruttori di tuple, parentesi e virgole. Espressioni condizionali o contenenti operatori aritmetici non sono pattern. Inoltre in un pattern non possono esserci occorrenze multiple della stessa variabile. I pattern possono essere confrontati con un valore, un valore si dice conforme ad un pattern se è possibile sostituire le variabili del pattern con sottoespressioni del valore in modo tale da ottener lo stesso valore. Se il confronto dell'espressione con il pattern ha successo, l'ambiente viene esteso aggiungendo i legami delle variabili che risultano dal pattern matching. 
+
+Anche nelle dichiarazioni di funzioni i parametri sono pattern, permettendo di evitare l'uso di selettori. Le espressioni funzionali si scrivono allo stesso modo di una dichiarazione, utilizzando pattern. Definendo una funzione in maniera esplicita o utilizzando espressioni funzionali, il parametro può essere sempre un pattern. 
+
+% !! à
+
+In generale le espressioni \verb|function| sono della forma:
+\begin{minted}{ocaml}
+    function P1 -> E1
+            |P2 -> E2
+            | ...
+            |Pn -> En
+\end{minted}
+Dove ogni pattern \verb|P| ha una sua espressione associata, di stesso tipo per ogni pattern. Si possono anche utilizzare pattern multipli, specificando i pattern da assegnare ad una certa espressione divisi da \texttt{|}. In questo modo si possono scrivere in modo estremamente sintetico e semplice, per esempio del fattoriale:
+\begin{minted}{ocaml}
+    let rec fact = function
+        0 | 1 -> 1
+        | n -> n * fact(n - 1)
+\end{minted}
+
+% * wao
+
+L'ordine è estremamente importante, poiché dopo aver calcolato il valore dell'argomento, se l'espressione è applicata ad un'espressione, questo valore viene confrontato in ordine dal primo pattern in poi. Se il confronto con un pattern ha successo vengono creati legami nell'ambiente con il valore di argomento, poi viene calcolata l'espressione della funzione tramite questo valore, e vengono rimossi i legami precedentemente creati, mantenendo solamente quelli tra argomento e risultato. 
+
+Si può utilizzare il simbolo \verb|_| come una \textit{wildcard}, può effettuare un pattern match con qualsiasi tipo, ma non viene salvato questo legame nell'ambiente. In un costrutto try-with può essere usata per catturare qualsiasi tipo di eccezione che viene sollevata. 
+
+Un altro costrutto con pattern matching molto utile è il match-with, in modo da confrontare un'espressione data in input con diversi pattern dello stesso tipo dell'espressione di ingresso. Tutti le espressioni di output devono essere dello stesso tipo:
+\begin{minted}{ocaml}
+    match E with
+        P1 -> E1
+        | ...
+        | Pn -> En
+\end{minted}
+
+Si può utilizzare per definire funzioni esplicitando i parametri presi in argomento, si considera l'esempio del fattoriale:
+\begin{minted}{ocaml}
+    let rec fact n =
+        match n with
+            0 -> 1
+            | _ -> n * fact(n - 1)
+\end{minted}
+Per valutare queste espressioni viene valutata l'espressione in input e ne viene computato il valore, confrontandolo con ogni pattern in ordine. Viene creato il legame con il primo pattern che effettua un match ed aggiunto all'ambiente. In seguito viene calcolato il valore dell'espressione corrispondente e sciolti i legami ausiliari creati. 
+
+Quando il pattern matching non è esaustivo OCaml individua il problema, ma è comunque interpreta l'espressione. Se non si riesce ad effettuare un match viene sollevato un errore. 
+
+
+
 
 
 \end{document}
