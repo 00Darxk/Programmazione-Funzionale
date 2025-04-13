@@ -82,7 +82,7 @@ Università degli Studi ``Roma Tre"}}
 
 %% 2 esoneri uno aprile uno a maggio, orale 
 
-\section{Introduzione ad OCaml}
+\section{PF01: Introduzione ad OCaml}
 
 La programmazione funzionale è un paradigma di programmazione estremamente potente, utilizza un metodo completamente diverso dagli altri paradigmi di programmazione. L'idea di base consiste nel considerare un programma una funzione, è un linguaggio di alto livello dichiarativo. Il programmatore infatti specifica che cosa deve essere calcolato, non come deve essere calcolato, a differenza di linguaggi imperativi.  
 Il linguaggio di programmazione pià funzionale è Haskell, nel corso verrà usato il linguaggio Objective Caml, contiene aspetti di programmazione orientata agli oggetti. 
@@ -100,26 +100,32 @@ I tre costrutti fondamentali sono applicazioni, composizione e ricorsione. Su al
     #
 \end{minted}
 
-Il compilatore legge un'espressione o una dichiarazione, terminata dalla sequenza \verb|;;|, in seguito calcola il valore, deducendo i tipi delle variabili utilizzate, e restituisce la soluzione a schermo. 
-Non c'è bisogno di dichiarazioni esplicite, OCaml può effettuare inferenze di tipo anche su espressioni estremamente complesse. È un linguaggio a tipizzazione statica, ogni tipo può essere determinato a tempo di compilazione. 
+Nella modalità interattiva il compilatore effettua il ciclo read-eval-print, legge un'espressione o una dichiarazione, terminata dalla sequenza \verb|;;|, in seguito calcola il valore, deducendo i tipi delle variabili utilizzate, e restituisce la soluzione a schermo. 
+Non c'è bisogno di dichiarazioni esplicite, OCaml può effettuare inferenze di tipo anche su espressioni estremamente complesse. È un linguaggio a tipizzazione statica, ogni tipo può essere determinato a tempo di compilazione. I tipi base di OCaml sono \verb|bool|, \verb|int|, \verb|float|, \verb|string|, \verb|char|, \verb|unit| e \verb|exn|. 
 
-%% TODO add tipi di base
+\subsection{Dichiarazioni e Funzioni}
 
-I costrutti di base sono le espressioni, non sono comandi, hanno sempre un valore ed un tipo. Il calcolo procede valutando queste espressioni, semplificandole fino ad ottenere un'espressione non più semplificabile, cioè un valore. 
+I costrutti di base sono le espressioni, non sono comandi, hanno sempre un valore ed un tipo. Il calcolo procede valutando queste espressioni, semplificandole fino ad ottenere un'espressione non più semplificabile, cioè un valore. I costruttori di controllo principale sono applicazione e composizione di funzioni e ricorsione. 
 
 La forma generale di una dichiarazione consiste dalla parola chiave \verb|let| seguita dall'identificatore, a cui si assegna una certa espressione:
 \begin{minted}{ocaml}
-    # let <identificatore> = <espressione>
+    let <identificatore> <parametri> = <espressione>
 \end{minted}
 
 Per specificare gli argomenti o parametri di una funzione, bisogna specificarli dopo il nome della funzione, per indicare che si tratta di una funzione ricorsiva bisogna utilizzare la parola chiave \verb|rec|, dopo \verb|let|:
 \begin{minted}{ocaml}
-    # let rec <identificatore> <parametri> = <espressione>
+    let rec <identificatore> <parametri> = <espressione>
 \end{minted}
 
+Le espressioni funzionali sono un particolare costrutto di espressioni introdotto dalla parola chiave \verb|function|:
+\begin{minted}{ocaml}
+    function <parametri> -> <espressione>
+\end{minted}
+Sono praticamente una funzione anonima, possono essere combinate con una dichiarazione con identificatore, avendo anch'essa un valore, per essere utilizzata all'interno della sua espressione. 
+
 Un ambiente è una collezione di legami tra variabili e valori, l'ambiente iniziale comprende tutte queste associazioni presenti nel modulo iniziale contenuto in \verb|Stdlib|. 
-Quando viene aggiunta ua nuova dichiarazione viene aggiunto un nuovo legame in cima a questo ambiente. Questo ambiente viene gestito come una pila, quindi dichiarazioni future sovrascrivono dichiarazioni precedenti, poiché vengono accedute prima. 
-Il valore delle variabili globali viene determinato a tempo di compilazione. Per cui è possibile modificare il valore di una variabile globale sovrascrivendola, ma altri oggetti possono comunque riferirsi alla vecchia definizione di questi valori, poiché si riferisce al tempo dove questa dichiarazione è stata inserita nell'ambiente. 
+Quando viene aggiunta una nuova dichiarazione viene aggiunto un nuovo legame in cima a questo ambiente. Questo ambiente viene gestito come una pila, quindi dichiarazioni future sovrascrivono dichiarazioni precedenti, poiché vengono accedute prima. 
+Il valore delle variabili globali viene determinato a tempo di compilazione. Per cui è possibile modificare il valore di una variabile globale sovrascrivendola, ma altri oggetti possono comunque riferirsi alla vecchia definizione di questi valori, poiché si riferisce al tempo dove questa dichiarazione è stata inserita nell'ambiente:
 \begin{minted}[escapeinside=||, mathescape]{ocaml}
     # let one = 1;;
     val one : int =  1
@@ -130,12 +136,22 @@ Il valore delle variabili globali viene determinato a tempo di compilazione. Per
     # oneplus 1;;
     - : int = 2
 \end{minted}
+\begin{center}
+    \begin{tabular}{|c|c|}
+        \hline Variabile & Valore\\\hline
+        \texttt{one} & 2 \\\hline
+        \texttt{oneplus} & \texttt{function n} $\to$ \texttt{n + one} \\\hline
+        \texttt{one} & 1 \\\hline
+        \multicolumn{2}{|c|}{\texttt{StdLib}}\\\hline
+    \end{tabular}
+\end{center}
+Nel corpo di \texttt{oneplus} il valore di \texttt{one} viene cercato nel suo ambiente di dichiarazione, nell'ambiente dove è stata definita la funzione \texttt{oneplus}. Questo ambiente è costituito da tutti i legami precedenti nella pila. 
+Quando viene applicato un argomento ad una funzione, il suo argomento viene valutato nell'ambiente, viene creato un legame provvisorio del parametro formale con il valore dell'argomento. In questo nuovo ambiente viene valutato il corpo della funzione. Dopo aver determinato il valore della funzione viene eliminato il legame provvisorio. 
 
-Quando si effettua una definizione che non dipende dal tipo specificato dei suoi parametri, queste vengono sostituite da variabili di tipo \verb|'a|, che rappresentano un tipo generico. Per indicare che si tratta di un tipo generico viene preceduto da un'apostrofo, convenzionalmente si usano le lettere greche $\alpha$ in questo caso. 
-È possibile applicare questa dichiarazione a qualsiasi tipo. 
+Quando si effettua una definizione che non dipende dal tipo specificato dei suoi parametri, queste vengono sostituite da variabili di tipo \verb|'a|, che rappresentano un tipo generico. Per indicare che si tratta di un tipo generico viene preceduto da un'apostrofo, convenzionalmente si usano le lettere greche, $\alpha$ in questo caso. Le funzioni così dichiarate si possono applicare a parametri di qualunque tipo. 
 
 Le funzioni sono oggetti di prima classe, hanno un proprio valore ed un tipo, quindi è possibile manipolarli, passando funzioni come argomenti ad altre funzioni. 
-\\
+
 Nelle espressioni di tipo si associa a destra:
 \begin{minted}[escapeinside=||, mathescape]{ocaml}
     int |$\rightarrow$| int |$\rightarrow$| int = int |$\rightarrow$| (int |$\rightarrow$| int)
@@ -146,7 +162,11 @@ Mentre nelle espressioni si associa a sinistra:
 \end{minted}
 Per cui l'uso delle parentesi è essenziale per il buon funzionamento del codice. 
 
-Funzioni di ordine superiore sono dei costrutti che prendono come argomento o riportano come valore una funzione. In questo modo si possono realizzare semplicemente funzioni come la sommatoria, che prendono come argomento la funzione \verb|f| di cui devono effettuare la somma:
+Le funzioni sono oggetti di prima classe, funzioni di ordine superiore sono dei costrutti che prendono come argomento o riportano come valore una funzione. 
+Funzioni possono essere componenti di una struttura dati, argomenti di altre funzioni o possono essere valori restituiti da altre funzioni. 
+
+
+In questo modo si possono realizzare semplicemente funzioni come la sommatoria, che prendono come argomento la funzione \verb|f| di cui devono effettuare la somma:
 \begin{minted}[escapeinside=||, mathescape]{ocaml}
     # let rec sum f (lower, upper) =
         if lower > upper then 0
@@ -154,7 +174,7 @@ Funzioni di ordine superiore sono dei costrutti che prendono come argomento o ri
     val sum : (int |$\rightarrow$| int) |$\rightarrow$| int * int |$\rightarrow$| int = <fun>
 \end{minted}
 
-La funzione \verb|sum| può essere applicata anche soltanto al suo primo argomento, generando una funzione di prima classe. Invece di inserire una coppia si possono inserire due elementi, \textit{currificando} la funzione, ovvero può funzionare anche con valutazione parziale, generando una funzione che si aspetta i rimanenti parametri, invece di generare un errore:
+La funzione \verb|sum| può essere applicata anche soltanto al suo primo argomento, generando una funzione di prima classe. Invece di inserire una coppia si possono inserire due elementi, \textit{currificando} la funzione, ovvero può funzionare anche con valutazione parziale, generando una funzione che si aspetta i rimanenti parametri, invece di generare un errore. Una funzione in forma currificata calcola gli stessi valori, consumando un solo argomento alla volta:
 \begin{minted}[escapeinside=||, mathescape]{ocaml}
     # let rec sum f lower upper =
         if lower > upper then 0
@@ -162,9 +182,7 @@ La funzione \verb|sum| può essere applicata anche soltanto al suo primo argomen
     val sum : (int |$\rightarrow$| int) |$\rightarrow$| int |$\rightarrow$| int |$\rightarrow$| int = <fun>
 \end{minted}
 
-Una funzione non currificata può essere applicata parzialmente. 
-%% TODO cercare slides completare sezione funzione map
-
+Una funzione non currificata non può essere applicata parzialmente. 
 In generale $f_c$ è la forma currificata di $f$ se:
 \begin{gather*}
     f:\,t_1\times\cdots\times t_n\rightarrow t\\
@@ -172,26 +190,40 @@ In generale $f_c$ è la forma currificata di $f$ se:
 \end{gather*}
 Currificando una funzione è possibile applicarla parzialmente. 
 
-Molte operazioni predefinite in OCaml sono in forma currificata. Le operazioni infisse predefinite sono in forma currificata. Per utilizzare un operatore in forma infissa si racchiude tra due parentesi tonde. Per definire degli operatori infissi si racchiudono tra parentesi nella loro definizione. 
+Molte operazioni predefinite in OCaml sono in forma currificata. Le operazioni infisse predefinite sono in forma currificata, per utilizzarla in forma infissa si racchiude tra due parentesi tonde \verb|(...)|. Per definire degli operatori infissi si racchiudono tra parentesi nella loro definizione: \verb|let (...) = ...|. Questi operatori possono essere usati in forma infissa e specificando dopo gli argomenti oppure tra se prende due argomenti tra questi senza parentesi:
+\begin{minted}[mathescape=true, escapeinside=||]{ocaml}
+    # let (++) x y = 2 * (x + y);;
+    val (++) : int |$\rightarrow$| int |$\rightarrow$| int = <fun>
+    # (++) 3 5;;
+    - : int 16
+    # 3 ++ 5
+    - : int 16
+\end{minted}
 
-Per effettuare un'operazione di composizione il codominio della seconda funzione deve essere uguale al dominio della prima funzione. Restituisce una funzione $f$ applicata su $g$. 
+Per effettuare un'operazione di composizione il codominio della seconda funzione deve essere uguale al dominio della prima funzione. Restituisce una funzione $f$ applicata su $g$: $f\circ g$, si utilizza la parola chiave \verb|comp|:
+\begin{minted}{ocaml}
+    let comp f g x = f (g x)
+\end{minted}
+La composizione è definita come un'operatore infisso \verb|(@@)|. 
 
-
-%% I TIPI
+\subsection{Tipi}
 
 Un tipo è l'insieme dei valori che può assumere, i tipi predefiniti sono:
 \begin{itemize}
-    \item Booleani, su cui sono definite le operazioni booleane \verb|not|, \verb|&&| e \texttt{||}. 
-    \item Interi su cui sono definite le operazioni \verb|+|, \verb|-|, \verb|*|, \verb|/|, \verb|mod|, \verb|succ| e \verb|pred|.
-    \item Numeri reali \verb|float|, su cui sono definite alcune delle stesse funzioni definite sugli interi, ma per mantenere l'inferenza di tipo vengono seguiti da un punto: \verb|+.|, \verb|-.|, \verb|*.| e \verb|/.|. Oltre a queste sono definite le più importanti funzioni matematiche sui reali. 
-    \item Caratteri \verb|char|, definiti sempre tra due apici \verb|'  '|, si possono convertire in codice ASCII corrispondente e viceversa con \verb|int_of_char| e \verb|char_of_int|. 
-    \item Stringhe tra doppi apici \verb|"  "|, che possono essere concatenate con l'operatore \verb|^|, si può accedere ai singoli caratteri con la notazione puntata specificando la posizione \verb|.[i]|. 
+    \item Booleani: \verb|{true, false}|, su cui sono definite le operazioni booleane \verb|not|, \verb|&&| e \texttt{||}. 
+    \item Interi: \verb|{min_int,...,-1,0,1,...,max_int}|, su cui sono definite le operazioni \verb|+|, \verb|-|, \verb|*|, \verb|/|, \verb|mod|, \verb|succ| e \verb|pred|.
+    \item Numeri reali a virgola mobile \verb|float|, su cui sono definite alcune delle stesse funzioni definite sugli interi, ma per mantenere l'inferenza di tipo vengono seguiti da un punto: \verb|+.|, \verb|-.|, \verb|*.| e \verb|/.|. Oltre a queste sono definite le più importanti funzioni matematiche sui reali. Non è presente la conversione automatica dei tipi numerici. 
+    \item Caratteri \verb|char|, definiti sempre tra due apici \verb|'...'|, si possono convertire in codice ASCII corrispondente e viceversa con \verb|int_of_char| e \verb|char_of_int|. 
+    \item Stringhe tra doppi apici \verb|"..."|, che possono essere concatenate con l'operatore di concatenazione \verb|^|, si può accedere ai singoli caratteri con la notazione puntata specificando la posizione \verb|.[i]|, la funzione \verb|string_of_int| converte un numero intero in una stringa. 
 \end{itemize} 
+Il tipo \verb|unit| ha un unico elemento \verb|()| e può essere usato al posto di qualsiasi tipo, si comporta come un super-tipo per tutti i tipi semplici.  
 
 Se si utilizzano funzioni definite su interi su reali o viceversa, viene generato un errore, sono comunque presenti funzioni per convertire tra questi tipi, ma operazioni di casting vengono sconsigliate. 
-Gli operatori di confronto sono definiti su qualsiasi tipo, eccetto che sulle funzioni. Nella notazione di OCaml il non uguale si rappresenta come \verb|<>|. Si possono effettuare confronti tra tuple, controllando secondo l'ordine lessicografico partendo dalla prima componente. 
+Gli operatori di confronto \verb|<|, \verb|>| e \verb|=| sono definiti su qualsiasi tipo, eccetto che sulle funzioni. Nella notazione di OCaml il non uguale si rappresenta come \verb|<>|. Si possono effettuare confronti tra tuple, controllando secondo l'ordine lessicografico partendo dalla prima componente. 
 
-Si possono realizzare istruzioni condizionali con il costrutto \verb|if E then F else G|, dove \verb|E| è un booleano, mentre \verb|F| e \verb|G| hanno lo stesso tipo, almeno un sottotipo in comune, e nei linguaggi ML deve essere possibile determinarlo a tempo di compilazione, sono linguaggi fortemente tipati. 
+\subsection{Espressioni Condizionali}
+
+Si possono realizzare istruzioni condizionali con il costrutto \verb|if E then F else G|, dove \verb|E| è un booleano, mentre \verb|F| e \verb|G| sono espressioni dello stesso tipo o almeno un sottotipo in comune, e nei linguaggi ML deve essere possibile determinarlo a tempo di compilazione, essendo linguaggi fortemente tipati. 
 
 Non è un costrutto di controllo come nei linguaggi imperativi, ma è un'espressione con un valore ed un tipo, il più generale tra \verb|F| e \verb|G|. Viene valutata in maniera pigra, se \verb|E| è vera, non viene valutata \verb|G|, mentre se è falsa non viene valutata \verb|F|. 
 
@@ -200,52 +232,182 @@ Le seguenti espressioni sono quindi equivalenti:
     \item \verb|E && F|: \verb|if E then F else false|.
     \item \texttt{E || F}: \verb|if E then true else F|.
 \end{itemize}
+Il costrutto \verb|else| viene sempre indentato sotto i rispettivi \verb|if|, e deve essere presente la parte \verb|else|, non è presente ambiguità. 
 
-Per valutare le espressioni in linguaggi ML si utilizza la regola di calcolo \textit{call by value}, la valutazione per valore, dove si calcola il valore dell'argomento prima di applicare la funzione, invece della valutazione per nome \textit{call by name}, questa regola viene utilizzata solamente nelle espressioni condizionali ed operatori booleani.
+
+Per valutare le espressioni in linguaggi ML si utilizza la regola di calcolo \textit{call by value}, la valutazione per valore, dove si calcola il valore dell'argomento prima di applicare la funzione, invece della valutazione per nome \textit{call by name}, questa regola viene utilizzata solamente nelle espressioni condizionali ed operatori booleani. La regola di calcolo per nome applica la funzione prima di aver calcolato il valore dell'argomento. 
 Se non si valutassero le espressioni booleane in modo pigro, ogni funzione ricorsiva che utilizza una funzione booleana per effettuare la ricorsione, valuterebbe all'infinito il passo ricorsivo, senza poter mai fermarsi. 
 
+\subsection{Coppie}
 
-Le coppie ordinate sono formate da due elementi divisi da una virgola tra parentesi tonde. Per rappresentare un costrutto di tipo si utilizza l'operatore \verb|*| per indicarlo. Sulle coppie si utilizzano le funzioni \verb|fst| e \verb|snd| per restituire il primo ed il secondo elemento della coppia, queste sono polimorfe, ma se vengono usate su tuple da più di due elementi restituiscono un errore.  
+Le coppie ordinate sono formate da due elementi divisi da una virgola tra parentesi tonde: \verb|(E, F)|. Per rappresentare un costrutto di tipo si utilizza l'operatore \verb|*| per indicarlo, il prodotto cartesiano non è associativo. Una tupla di tuple è diversa da una tripla: \verb|int * (int * int)| \verb|<>| \verb|int * int * int|. 
+Sulle coppie si utilizzano le funzioni \verb|fst| e \verb|snd| per restituire il primo ed il secondo elemento della coppia, queste sono polimorfe, ma se vengono usate su tuple di più di due elementi restituiscono un errore. 
 
-%% TODO add esercitazione
-%% TODO add l'unico elemento del tipo unit: ()
+Le coppie come tutti i tipi di dati su OCaml sono definiti da un insieme di costruttori che creano valori di quel tipo, ed un insieme di selettori, operazioni per selezionare componenti da un valore di tipo. 
+I tipi semplici non hanno selettori, ma solo costruttori, questi sono tutti i valori del tipo. 
+Per le coppie il costruttore è \verb|(,)|, l'insieme tra parentesi e virgola, applicato ad un'espressione di tipo $\alpha$ e $\beta$. Mentre i selettori sono \verb|fst| e \verb|snd|. 
 
-Nei linguaggi funzionali non esistono costrutti di controllo, ma il principale meccanismo di controllo è la ricorsione. 
-%% TODO add prime pagine ppt 10/3/25
 
-%% ESEMPIO di creazione di una funzione split_string: string -> int * char * int, che data una stringa rappresentante un'operazione aritmetica la divide in  un primo operando, l'operazione ed il secondo operando: split_string s = (n, op, m)
 
-%% dichiarazioni locali: let - in
-%% dichiarazione locale di una variabile
-%% valutazione di espressioni let
-%% tipo delle eccezioni exn, consente di scrivere programmi che segnalano gli errori 
+\clearpage
+
+%% TODO add esercitazione n. 1
+
+\section{PF02: Ricorsione e Pattern}
+
+\subsection{Definizioni Ricorsive}
+
+Nei linguaggi funzionali non esistono costrutti di controllo, ma il principale meccanismo di controllo è la ricorsione, realizzato tramite la parola chiave \verb|rec|. 
+In linguaggi funzionali ``puri'', non sono presenti costrutti di controllo per realizzare cicli. Per risolvere un problema ricorsivamente bisogna identificare i casi base, che possono essere risolti immediatamente. Inoltre bisogna identificare sotto-problemi più semplici di un generico problema complesso, che possono aiutare ad individuare la sua soluzione. Supponendo di poter risolvere questi problemi, l'ipotesi di lavoro, bisogna operare sulla soluzione di questi sotto-problemi per ottenere la soluzione del problema complesso. 
+
+\subsubsection*{Esempio: \texttt{split\_string}}
+
+Si considera il problema di valutare un'espressione aritmetica rappresentata in una stringa. L'operazione è tra due interi non negativi, la funzione offerta come soluzione dovrebbe riportare il risultato di questa espressione. Le operazioni consentite sono la somma, differenza, prodotto e divisione intera. 
+Si avrà una funzione: \verb|evaluate: string -> int|. Applicata su una variabile $s$, di tipo stringa deve restituire il risultato dell'espressione rappresentata, o un errore se non rispetta le condizioni d'uso. 
+
+Un sotto-problema utile consiste nel suddividere la stringa in tre parti, i due interi operandi ed il carattere che identifica l'operatore: \verb|split_string: string| $\rightarrow$ \verb|int * char * int|. Applicata ad una stringa $s$ restituisce una tripla $(n,op,m)$. 
+
+Per risolvere questo problema bisogna individuare quale dei caratteri della stringa non è un numero, si può effettuare con un'altra funzione \verb|primo_non_numerico: string| $\rightarrow$ \verb|int|. Data una stringa $s$ passata come input restituisce la posizione $i$-esima del primo carattere non numerico nella stringa. 
+
+Si può definire inoltre un'altra funzione per tagliare una porzione della stringa tra due posizioni fornite \verb|substring: string| $\rightarrow$ \verb|int| $\rightarrow$ \verb|int| $\rightarrow$ \verb|string|. Applicata ad una stringa $s$, restituisce la sotto-stringa dalla posizione $j$-esima alla posizione $k$-esima. 
+
+Dal moduli Pervasives si può usare la funzione \verb|int_of_string| per restituire l'intero corrispondente ad una stringa. Dal modulo String, si possono usare la funzione \verb|sub| e \verb|length| per restituire una sotto-stringa la prima e la lunghezza di una stringa la seconda. 
+Queste funzioni producono un errore se la stringa non corrisponde ad un intero la prima, ovvero se sono presenti caratteri non numerici, e se gli indici forniti non appartengono alla stringa, la seconda. 
+
+Per controllare i caratteri di una stringa si usa la funzione \verb|get| del modulo String, abbreviata in notazione puntata come \verb|.[i]|. Si definisce quindi la funzione per trovare il primo carattere non numerico:
+\begin{minted}{ocaml}
+    let rec loop s i = 
+        if (s.[i] < '0' || s.[i] > '9') then i
+        else loop s (i + 1);;
+    let primo_non_numerico s = loop s 0;;
+\end{minted}
+% primo_non_numerico "111a";;
+
+
+\subsection{Dichiarazioni Locali}
+
+All'interno di una funzione si possono dichiarare ulteriori espressioni, con il costrutto \verb|let...in|, dove si dichiara l'espressione normalmente con \verb|let|, seguito da \verb|in|, dove vengono passati i parametri da applicare all'espressione locale. Le variabili definite nella dichiarazione locale sono variabili locali, inizializzate nel \verb|in|, queste hanno un valore solamente all'interno dell'espressione locale. Quando viene valutata la funzione, questa variabile non ha più valore, viene quindi creato un legame temporanea nell'ambiente quando viene invocata quest'espressione locale tramite l'\verb|in|. All'interno di una funzione locale, sono visibili i parametri globali della funzione esterna, e possono essere usati e modificati all'interno di espressioni locali. 
+
+Data una dichiarazione locale \verb|let x = E in F| in un ambiente $\mathscr{A}$, viene calcolato il valore \verb|v| della dichiarazione \verb|E| di \verb|let|, e viene provvisoriamente legata alla variabile \verb|x| estendendo $\mathscr{A}$. In questo nuovo ambiente viene calcolato il valore dell'espressione \verb|F| di \verb|in|. Il valore così calcolato di \verb|F| diventa il valore dell'intera espressione. Dopo averlo calcolato viene sciolto il legame provvisorio di \verb|x|, e viene ripristinato l'ambiente $\mathscr{A}$. Un'espressione locale è quindi equivalente a: \verb|let x = E in F| $\Leftrightarrow$ \verb|(function x| $\rightarrow$ \verb|F) E|. 
+
+Si possono usare dichiarazioni locali per evitare di dover calcolare più volte il valore di un'espressione, usata più volte. 
+Una funzione può essere dichiarata localmente se non ha un significato autonomo, all'esterno della funzione dove viene usata e se consente di diminuire il numero di parametri. 
+
+\subsubsection*{Esempio: \texttt{split\_string}}
+
+Utilizzando dichiarazioni locali è possibile inserire in una sola funzione tute le funzioni ausiliarie definite precedentemente:
+\begin{minted}{ocaml}
+    let primo_non_numerico s =
+        let rec loop i = 
+            if (s.[i] < '0' || s.[i] > '9') then i
+            else loop (i+1)
+        in loop 0
+\end{minted}
+
+La funzione \verb|substring| viene realizzata tramite la funzione \verb|sub| del modulo String:
+\begin{minted}{ocaml}
+    let substring s j k =
+        String.sub s j ((k-j)+1);;    
+\end{minted}
+
+Si può quindi realizzare la funzione \verb|split_string| in questo modo:
+\begin{minted}{ocaml}
+    let split_string s =
+        let i = primo_non_numerico s 
+        in (int_of_string (substring s 0 (i - 1)),
+            s.[i],
+            int_of_string (substring s (i + 1) ((String.length s) - 1)))
+\end{minted}
+
+La soluzione al problema descritto, è quindi data dalla seguente funzione \verb|evaluate|:
+\begin{minted}{ocaml}
+    let evaluate s =
+        let (n, op, m) = split_string s
+        in if op = '+' then (n + m)
+           else if op = '-' then (n - m)
+                else if op = '*' then (n * m)
+                     else if op = '/' then (n / m)
+                          else ???    
+\end{minted}
+Si incontra un problema poiché la funzione deve restituire un risultato quando la stringa di input non rispetta le condizioni di utilizzo della funzione. Dovrebbe restituire un errore, oppure sollevare un messaggio di errore se il valore di $op$ non coincide ad uno dei quattro operatori. Il problema è che la funzione è di tipo \verb|string| $\rightarrow$ \verb|int|, quindi può solamente restituire un numero intero, anche se l'espressione aritmetica fornita non è valida per poterne calcolare il valore. 
+
+\subsection{Eccezioni}
+
+Si possono definire nuove eccezioni, tramite la parola chiave \verb|exception|, tutte le eccezioni sono di tipo \verb|exn|, permettono di scrivere programmi che segnalano errori. Invece di restituire un valore un'espressione può sollevare un'eccezione. Tutte le funzioni sono in grado di sollevare un'eccezione e terminare immediatamente la loro esecuzione, invece di restituire un valore. 
 
 Esiste un insieme di eccezioni predefinite, iniziano sempre con una lettera maiuscola. Dopo che è stata dichiarata un'eccezione è anche possibile sollevarla, utilizzando la parola chiave \verb|raise|, seguita dall'identificativo dell'eccezione. 
-Se durante il calcolo di un'espressione viene sollevata un'eccezione, allora il calcolo del valore termina immediatamente generando l'eccezione. Un'eccezione può essere catturata con un costrutto simile al try-catch di Java, chiamato \verb|try|-\verb|with|. Nel \verb|try| viene inserita un'espressione da calcolare, se viene sollevata un'eccezione durante il calcolo del valore, controlla se il tipo dell'eccezione sollevata corrisponde all'eccezione presente nel costrutto \verb|with|, seguito da \verb|->| che indica un'espressione da eseguire in caso sia verificata l'eccezione. Un'espressione di tipo \verb|exn| può essere il valore di qualsiasi funzione, ed argomento di qualsiasi altra funzione, questo è un caso particolare per la tipizzazione forte. Si possono usare eccezioni predefinite di OCaml per sollevare eccezioni proprie fornendo commenti più descrittivi. 
+Se durante il calcolo di un'espressione viene sollevata un'eccezione, allora il calcolo del valore termina immediatamente generando l'eccezione. Un'eccezione può essere catturata con un costrutto simile al try-catch di Java, chiamato \verb|try|-\verb|with|. Nel \verb|try| viene inserita un'espressione da calcolare, se viene sollevata un'eccezione durante il calcolo del valore, controlla se il tipo dell'eccezione sollevata corrisponde all'eccezione presente nel costrutto \verb|with|, seguito da \verb|->| che indica un'espressione da eseguire in caso sia verificata l'eccezione. Un'espressione di tipo \verb|exn| può essere il valore di qualsiasi funzione, ed argomento di qualsiasi altra funzione, questo è un eccezione per la tipizzazione forte di OCaml. Si possono usare eccezioni predefinite di OCaml per sollevare eccezioni proprie fornendo commenti più descrittivi. Il nome di tutte le eccezioni comincia con una lettera maiuscola. 
+
+Le eccezioni vengono propagate, se durante il calcolo del valore di un'espressione \verb|E| viene sollevata un'eccezione e non viene catturata, se \verb|E| è un'espressione locale, allora l'eccezione può essere catturata all'interno dell'espressione esterna. Se non viene catturata può continuare ad essere propagata in alto fino alla prima espressione chiamante, e se non viene catturata neanche a questo punto termina l'esecuzione dell'interno programma. 
+
+Un uso non elegante delle eccezioni consiste nell'usare un'eccezione sollevata in un costrutto \verb|try-with| per definire dei casi base per una funzione ricorsiva. In questo modo l'interruzione dell'esecuzione causata dall'eccezione restituisce il valore del caso base dal \verb|with|, mentre per gli altri casi non viene sollevata l'eccezione quindi l'esecuzione continua come se fosse stato implementato un caso base con un controllo. 
+
+\subsubsection*{Esempio: \texttt{split\_string}}
+
+Utilizzando un'eccezione si può risolvere il problema proposto, definendo una nuova eccezione e sollevandola se l'operatore non corrisponde a nessuno degli operatori permessi:
+\begin{minted}{ocaml}
+    exception BadOperation;;
+    let evaluate s =
+        let (n, op, m) = split_string s
+        in if op = '+' then (n + m)
+           else if op = '-' then (n - m)
+                else if op = '*' then (n * m)
+                     else if op = '/' then (n / m)
+                          else raise BadOperation;;
+\end{minted}
+
+A questo punto utilizzando le eccezioni si possono inserire dei controlli nelle altre funzioni ausiliarie dentro al programma. Se non sono presenti caratteri non numerici, allora dovrebbe essere sollevata l'eccezione \verb|BadOperation|:
+\begin{minted}{ocaml}
+    let primo_non_numerico s =
+        let rec aux i = 
+            if (s.[i] < '0' || s.[i] > '9'  ) then i
+            else aux (i+1)
+        in try aux 0
+           with Invalid_argument "index out of bounds" -> raise BadOperation
+\end{minted}
+L'eccezione catturata si verifica quando si esce fuori dall'indice consentito di una stringa. Si utilizza il nome \verb|aux| per indicare una funzione ausiliaria generica. 
+
+La funzione \verb|split_string| può fallire quando viene chiamata \verb|int_of_string| se la sotto-stringa che le viene passata non corrisponde ad un intero, dato che solo il primo carattere non numerico viene rimosso, se ne è presente più di uno questo provoca il fallimento della funzione. Si può quindi definire una nuova eccezione:
+\begin{minted}{ocaml}
+    exception BadInt;;
+    let split_string s =
+        let i = primo_non_numerico s 
+        in try (int_of_string (substring s 0 (i - 1)),
+                s.[i],
+                int_of_string (substring s (i + 1) ((String.length s) - 1)))
+           with Failure "int_of_string" -> raise BadInt
+\end{minted}
 
 \subsection{Pattern}
 
-%% TODO add pagine ~30/50 11/3/25
+L'uso di costrutti condizionali è molto usato e comune, e sarebbe utile per molte applicazioni poter semplificare la loro scrittura. In diversi linguaggi di programmazione sono presenti costrutti simili ad uno \textit{switch-case}, l'equivalente in OCaml e nei linguaggi ML sono i \textit{pattern}. 
+Quando si effettua una dichiarazione su una variabile \verb|x|, questo è un caso particolare di pattern. 
+Una dichiarazione è quindi generalmente costituita dalla parola chiave \verb|let|, seguita da un pattern, a cui viene assegnato il valore di un'espressione. 
+La forza principale di OCaml consiste in questa abilità di \textit{pattern matching}. Un pattern è un'espressione costituita da variabili e/o costruttori di tipo, per i tipi introdotti fin'ora i costruttori sono tutti e soli i valori dei tipi \verb|int|, \verb|float|, \verb|bool|, \verb|char|, \verb|string| ed \verb|unit|, ed i costruttori di tuple: \verb|(,)|. In un pattern però non possono esserci ripetizioni di una stessa variabile, eccetto la variabile muta \verb|()|. 
+Espressioni condizionali o contenenti operatori aritmetici non sono pattern, il pattern matching costituito da una sola variabile e qualunque espressione ha sempre esito positivo, non avendo restrizioni di alcun modo sui tipi. 
 
-Quando si effettua una dichiarazione su una variabile \verb|x|, questo è un caso particolare di \textit{pattern}. La forza principale di OCaml consiste in questa abilità di \textit{pattern matching}. Un pattern è un'espressione costituita da variabili e costruttori di tipo, per i tipi introdotti fin'ora i costruttori sono tutti e olo i valori dei tipi \verb|int|, \verb|float|, \verb|bool|, \verb|char|, \verb|string|, \verb|unit|, ed i costruttori di tuple, parentesi e virgole. Espressioni condizionali o contenenti operatori aritmetici non sono pattern. Inoltre in un pattern non possono esserci occorrenze multiple della stessa variabile. I pattern possono essere confrontati con un valore, un valore si dice conforme ad un pattern se è possibile sostituire le variabili del pattern con sottoespressioni del valore in modo tale da ottener lo stesso valore. Se il confronto dell'espressione con il pattern ha successo, l'ambiente viene esteso aggiungendo i legami delle variabili che risultano dal pattern matching. 
+Dato un pattern \verb|P|, un certo valore \verb|V| si dice conforme al pattern \verb|P|, se è possibile sostituire le variabili in \verb|P| con il valore di sotto-espressioni di \verb|V|, in modo da ottenere \verb|V| stesso. 
+Ogni espressione \verb|E| ha un suo valore \verb|V|, quindi si può generalizzare la concezione di pattern matching. 
+L'operazione di pattern matching consiste nel confrontare un espressione \verb|E| con un pattern \verb|P|. Il confronto ha successo se il valore ottenuto \verb|V| è conforme al pattern \verb|P|, se ha successo allora si determina come sostituire le variabili di \verb|P| per ottenere il valore \verb|V|. Quindi viene esteso l'ambiente corrente, inserendo i legami risultanti dal pattern matching. 
 
-Anche nelle dichiarazioni di funzioni i parametri sono pattern, permettendo di evitare l'uso di selettori. Le espressioni funzionali si scrivono allo stesso modo di una dichiarazione, utilizzando pattern. Definendo una funzione in maniera esplicita o utilizzando espressioni funzionali, il parametro può essere sempre un pattern. 
 
-% !! à
+Anche nelle dichiarazioni di funzioni i parametri sono pattern, permettendo di evitare l'uso di selettori all'interno del corpo della funzione. Le espressioni funzionali si scrivono allo stesso modo di una dichiarazione, utilizzando pattern. Definendo una funzione in maniera esplicita o utilizzando espressioni funzionali, il parametro può essere sempre un pattern. 
 
-In generale le espressioni \verb|function| sono della forma:
+In generale quindi le espressioni \verb|function| sono della forma:
 \begin{minted}{ocaml}
-    function P1 -> E1
-            |P2 -> E2
-            | ...
-            |Pn -> En
+    function   P1 -> E1
+             | P2 -> E2
+             |   ...
+             | Pn -> En
 \end{minted}
-Dove ogni pattern \verb|P| ha una sua espressione associata, di stesso tipo per ogni pattern. Si possono anche utilizzare pattern multipli, specificando i pattern da assegnare ad una certa espressione divisi da \texttt{|}. In questo modo si possono scrivere in modo estremamente sintetico e semplice, per esempio del fattoriale:
+Dove ogni pattern \verb|Pi| ha lo stesso tipo \verb|Tp| ed una sua espressione associata di stesso tipo \verb|Te|. 
+Il tipo dell'espressione \verb|function| è quindi \verb|Tp| $\rightarrow$ \verb|Te|. Si possono anche utilizzare pattern multipli, specificando i pattern da assegnare ad una certa espressione divisi da \texttt{|}. In questo modo si possono scrivere in modo estremamente sintetico e semplice espressioni e funzioni. Si considera un espressione per il calcolo del fattoriale:
 \begin{minted}{ocaml}
     let rec fact = function
-        0 | 1 -> 1
+          0 | 1 -> 1
         | n -> n * fact(n - 1)
-\end{minted}
+\end{minted} 
+%% TODO ~53/63 ppt pdf PF02.pdf
 
 % * wao
 
@@ -272,8 +434,387 @@ Per valutare queste espressioni viene valutata l'espressione in input e ne viene
 
 Quando il pattern matching non è esaustivo OCaml individua il problema, ma è comunque interpreta l'espressione. Se non si riesce ad effettuare un match viene sollevato un errore. 
 
+\subsection*{esercitazione}
+
+Definire una funzione \verb|ultime_cifre:| \verb|-> int * int| che riporti il valore intero delle due ultime cifre di un \verb|int|. Dato un numero, il suo modulo base 10 restituisce l'ultima cifra. Mentre per ottenere la penultima si effettua una divisione intera per 10 per eliminare l'ultima cifra e si riapplica il modulo base 10 per ottenere questa cifra:
+\begin{minted}{ocaml}
+    let ultime_cifre x = (abs(x) mod 10, abs(x/10) mod 10);;
+\end{minted}
+
+%% TODO esercitazione 17/3/25
+
+Una cifra è bella se è 0, 3 o 7; un numero è bello se la sua ultima cifra è bella e la penultima (se esiste) non lo è. Definire un predicato \verb|bello: int -> bool|, che determini se un numero è bello, la funzione non deve mai sollevare eccezioni, ma riportare sempre un \verb|bool|. 
+\begin{minted}{ocaml}
+    let bello x = 
+        match abs(x mod 10) with
+            0 | 3 | 7 -> (match (abs(x mod 10))/10 with
+                0 | 3 | 7 -> x < 10
+                    3 | 7 -> false
+                    | 0 -> x < 100
+                    | _ -> true)
+            | _ -> false;;
+\end{minted}
+
+Scrivere una funzione \verb|data: int * string -> bool|, che applicata ad una coppia \verb|(d, m)| di un intero \verb|d| e una stringa \verb|m|, determini se la coppia rappresenta una data corretta, assumendo che l'anno non sia bisestile, si assuma che i mesi siano rappresentati da stringhe con caratteri minuscoli. La funzione on deve sollevare eccezioni, ma riportare sempre un \verb|bool|. 
+È utile scrivere una funzione \verb|gdm| per determinare i giorni di un mese:
+\begin{minted}{ocaml}
+    let gdm m = 
+        match with
+        "gennaio"  | "marzo" | "maggio" | "luglio" | "agosto" | "ottobre" | "dicembre" -> 31
+        | "aprile" | "giugno" | "settembre" | "novembre" -> 30
+        | "febbraio" -> 28
+        | _ -> 0
+\end{minted}
+La funzione principale è quindi:
+\begin{minted}{ocaml}
+    let data (d,m) = d <= gdm m && d > 0;;
+\end{minted}
+
+\subsection{Costrutti Imperativi}
+
+Esistono delle funzioni di stampa a schermo, che inviano una funzione allo \verb|stdout|:
+\begin{minted}{ocaml}
+    val print_string: string -> unit
+    val print_int: int -> unit
+\end{minted}
+Queste funzioni restituiscono un solo elemento \verb|()|. 
+
+Data una serie di espressioni \verb|Ei|, l'espressione formata dalla concatenazione di queste, utilizzando un \verb|;| e racchiusi in \verb|()| è anch'essa un'espressione, questi valori vengono calcolati ma non vengono stampati a schermo, solo quello dell'ultima espressione:
+\begin{minted}{ocaml}
+    ( E1 ; E2 ; ... ; En)
+\end{minted}
+Il tipo e valore di questa espressione è il tipo ed il valore dell'ultima espressione. Anche se ci sono errori nelle espressioni precedenti, continua la valutazione dell'espressione, poiché sono espressioni separate. 
+
+%% TODO add 17-18/3/25 
+%% TODO >= 5 / 12 ppt 
+%% TODO add esercitazione 24/3/25
+
+%% caratteristica di OCaml di modificare variabili con costrutti presenti in OCaml, non significa che è lecito utilizzarli essendo un corso di programmazione funzionale
 
 
 
+
+
+%% LISTE
+
+Le liste sono sequenze finite di elementi dello stesso tipo, dove \verb|list| è il costruttore delle liste, preceduto dal tipo degli elementi della lista. La lista vuota è un oggetto polimorfo, indicato con \verb|[]|. L'inserimento in testa, \textit{cons}, è un'operazione fondamentale denotata da \verb|::|, infisso. Si possono quindi realizzare liste in modo induttivo:
+\begin{minted}{ocaml}
+    [] : 'a list
+    :: : 'a -> 'a list -> 'a list 
+\end{minted}
+%% TODO fix def ::
+I selettori di una lista sono \verb|.hd|,\textit{head}, che restituisce il primo elemento e \verb|tl|, \textit{tail}, restituisce l'ultimo elemento. Applicati su una lista vuota viene sollevata un'eccezione. 
+%% TODO definizioni di length lista 
+%% TODO tabella pattern match
+
+%% MERGE SORT LIST
+
+
+\begin{minted}{ocaml}
+    let rec split = function
+          [] -> ([], [])
+        | [x] -> ([x], [])
+        | x::y::rest -> let (xs, ys) = split rest
+                        in (x::xs, y::ys)
+\end{minted}
+Le due parti della lista devono avere la stessa lunghezza, o al massimo variare di uno, ci sono due casi base, se la lista è vuota o ha un sollo elemento. Se si hanno almeno due elementi si spacca a metà la lista, togliendo i primi due elementi \verb|x| e \verb|y| e si mettono in testa allo divisione successiva \verb|xs| \verb|ys|. 
+Si può realizzare in modo più succinto, considerando solo due casi, una lista vuota o non vuota:
+\begin{minted}{ocaml}
+    let rec split = function
+        | [] -> ([], [])
+        | x..xs -> let (as, bs) = split xs
+                    in (x::bs, as)
+\end{minted}
+
+%% FUNZIONE MERGESORT
+\begin{minted}{ocaml}
+    let rec mergesort = function
+          [] -> []
+        | [x] -> [x]
+        | l -> let (l1, l2) = split l
+               in merge (mergesort l1) (mergesort l2)
+\end{minted}
+Nel modulo list sono definite le funzioni head \verb|hd|, tail \verb|tl| già descritte in precedenza, \verb|length|, \verb|flatten| che trasforma una lista di liste in un'unica grande lista, la funzione \verb|sort| che ordina una lista, secondo un qualsiasi ordine definito da una funzione fornita come argomento. 
+
+%% upto: upto m n = [m, m+1, ..., n]
+\begin{minted}{ocaml}
+    let rec upto m n = 
+        if m > n then []
+        else m::(upto (m + 1) n)
+\end{minted}
+% versione ricorsiva: 
+\begin{minted}{ocaml}
+    let upto' m n =
+        let rec aux l m' n' =
+            if m > n then l
+            else aux (n'::l) m' (n' - 1)
+        in aux [] m n
+\end{minted}
+L'ultima riga potrebbe essere scritta come \verb|else aux (m'::l) (m'+1) n'|, ma in questo modo si inverte l'ordine della lista creata. Nelle due versioni si aggiunge sempre in testa, partendo dall'estremo superiore nel primo caso e dall'estremo inferiore nel secondo caso. 
+
+
+\begin{minted}{ocaml}
+    let rec take n l = match l with
+          [] -> []
+        | x::xs -> if n > 0 then x::(take (n - 1) xs)
+                   else []
+    
+    let take' n l = 
+        let aux acc n' l' = match l with
+              [] -> acc
+            | x::xs if n' > 0 then aux (acc@[x]) (n' - 1) xs
+                    else acc 
+        in aux [] n l
+\end{minted}
+
+
+
+\begin{minted}{ocaml}
+    let rev l =
+        let rec aux acc = function
+              [] -> acc
+            | x::xs -> aux (x::acc) xs
+        in aux [] l
+\end{minted}
+
+
+La funzione \verb|flatten| appiattisce una lista di liste:
+\begin{minted}{ocaml}
+    let rec flatten ll 
+        let aux acc = function 
+              [] -> acc
+            | x::xs -> flatten (acc@x) xs 
+        in aux [] ll
+\end{minted}
+
+La funzione \verb|conta| determina le occorrenze di un elemento in una lista:
+\begin{minted}{ocaml}
+    let rec conta v = function
+          [] -> 0
+        | x::xs -> if x = v then 1 + (conta v xs)
+                   else conta v xs
+\end{minted}
+In forma iterativa diventa:
+\begin{minted}{ocaml}
+    let conta v l =
+        let rec aux t l' a =
+            match l with
+                  [] -> a
+                | x::xs -> if x = t then aux t xs (a + 1)
+                           else aux t xs acc
+        in aux v l 0
+\end{minted}
+La funzione \verb|contatutti|: \verb|'a list -> 'a list -> ('a * int) list| conta tutte le occorrenze di ogni elemento nella lista \verb|flatten|:
+\begin{minted}{ocaml}
+    let rec contatutti e l =
+        match e with
+              [] -> []
+            | x::xs -> (x, (conta x l))::(contatutti xs l)
+\end{minted}
+Per ordinarle in ordine crescente in cui sono state estratte, bisogna determinare una funzione di ordinamento per la funzione \verb|sort| del modulo \verb|List| che permette di restituire una lista di coppie in output, come in input. Si definisce una funzione ausiliaria \verb|comp|:
+\begin{minted}{ocaml}
+    let comp (v1, n1) = function
+        (_, n) -> if n1 < n then -1
+                  else if n1 = n then 0
+                  else 1
+\end{minted}
+Questa funzione permette di comparare due coppie, quindi si può usare per ordinare una lista formata da coppie:
+\begin{minted}{ocaml}
+    let sort l = 
+        List.sort comp l
+\end{minted}
+
+
+%% ??
+\begin{minted}{ocaml}
+    let rec primi = function
+          [] -> []
+        | x::xs -> (fst x)::(primi xs)
+\end{minted}
+
+\begin{minted}{ocaml}
+    let super estrazioni dim higher =
+        print(' (take' dim (sort (contatuttti (upto 1 higher) (flatten0 estrazioni)))))
+\end{minted}
+
+%% DIZIONARIO
+
+Un tipo di dato interessante sono il tipo di dato dizionario, una collezione di elementi ciascuno costituito da una coppia chiave-valore. Ogni elemento ha chiave distinta. 
+Su questa collezione si può cercare un elemento per chiave, inserire una coppia di elementi, e cancellare un elemento. 
+%% TODO ??
+\begin{minted}{ocaml}
+    let rec assoc k = function
+          [] -> raise NotFound
+        | (k1, v)::rest -> if k = k1 then v
+                           else assoc k rest
+\end{minted}
+Questa dichiarazione non è corretta poiché nell'istruzione dichiarativa il tipo del costrutto \verb|then| è il tipo di \verb|v|, mentre nell'\verb|else| il tipo restituito è una funzione e non coincide ad un valore. 
+Per inserire un valore in un dizionario, bisogna prima eliminare la vecchia coppia che occupava quella chiave. Essendo troppo costoso per inserire una nuova coppia questa viene inserita in testa al dizionario, mente le vecchie coppie obsolete si trovano dopo questa nuova coppia. 
+\begin{minted}{ocaml}
+    let rec cancella k = function
+          [] -> []
+        | (k', v)::rest -> if k = k' then cancella k rest
+                           else  (k', v)::cancella k rest
+\end{minted}
+
+
+%% TODO
+
+Rappresentare un tipo astratto di dato è costituito da un insieme di oggetti ed un insieme di operazioni su tali oggetti.  %% TODO
+
+
+
+%% INSIEMI 
+
+Negli insiemi tramite liste bisogna definire le loro operazioni. Si considera una possibile implementazione della differenza tra due insiemi:
+\begin{minted}{ocaml}
+    let rec setdiff l l' = function 
+          [] -> 
+        | x::xs -> if mem x l' then setdiff xs l'
+                   else x::(setdiff xs l')
+\end{minted}
+In maniera iterativa:
+\begin{minted}{ocaml}
+    let setdiff' l l' = 
+        let rec aux acc l l' = match l with
+              [] -> []
+            | x::xs -> if mem x l' then aux acc xs l'
+                       else aux(x::acc l l')
+        in aux [] l l'
+\end{minted}
+
+
+
+%% ESERCITAZIONE 
+\begin{minted}{ocaml}
+    exception NoElement ;; 
+    let maxlist = function
+          [] -> raise NoElement
+        | x::xs -> let rec aux m = function
+              [] -> m
+            | x::xs -> if x > m then aux x xs
+                       else aux m xs
+            in aux x xs
+\end{minted}
+
+Si ipotizza di non avere a disposizione l'operatore \verb|@|, definire la concatenazione:
+\begin{minted}{ocaml}
+    let rec append l1 l2 = match l1 with
+          [] -> l2
+        | x::xs -> x::(append xs l2) 
+\end{minted}
+In modo iterativo diventa:
+\begin{minted}{ocaml}
+    let append l1 l2 =
+        let rec aux a = function
+              [] -> a
+            | x::xs -> aux (x::a) xs
+        in aux l2 List.rev(l1)
+\end{minted}
+
+
+\begin{minted}{ocaml}
+    let rec nth n = function
+          [] -> raise NoElement
+        | x::xs -> if n < 0 then raise NoElement
+                   else if n = 0 then x
+                        else nth (n-1) xs;;
+\end{minted}
+
+
+\begin{minted}{ocaml}
+    let rec nondec = function
+          [] | [a] -> true
+        | x::y::xs -> if x > y then false
+                      else nondec (y::xs)
+\end{minted}
+
+
+%% TODO idfk 
+
+\begin{minted}{ocaml}
+    let min_dei_max ls = 
+        let rec listmax acc = function
+              [] -> acc
+            | x::xs -> listmax ((maxlist x)::acc) xs
+        in let rec minlist = function
+              [] -> raise NoElement
+            | x::xs -> try let y = minlist(xs)
+                           in min x y
+                       with _ -> x
+        in minlist(listmax [] ls);;
+\end{minted}
+%% TESTING funzione con ocaml repl
+% min_dei_max [[1;2;3];[3;4;1;0];[78]];;
+
+Concatena l'accumulatore con i massimi di ciascuna lista del secondo argomento, l'argomento implicito è una lista di liste, essendo l'argomento della funzione esterna \verb|ls|. Si può inferire il tipo dato che ad un elemento della lista \verb|x| viene passato come argomento a \verb|maxlist|, quindi deve essere una lista. 
+
+
+
+\verb|split2| agisce in modo simile alla funzione \verb|split| definita precedentemente, divide in due parti ...
+
+\subsection{Backtracking}
+
+Il \textit{backtracking} è una delle tecniche più importanti nella progettazione di algoritmi. L'idea è di costruire una soluzione in modo incrementale, in OCaml si può realizzare semplicemente. Questo algoritmo è simile ad una ricerca in ampiezza, ma è completa, poiché dopo aver trovato tutte le soluzioni scarta quelle peggiori e mantiene la soluzione migliore. 
+
+I candidati ad essere soluzioni sono una sequenza di elementi $x_i$ appartenenti all'insieme delle possibili soluzioni $S$. L'approccio di ``forza bruta'' considera tutte le possibili combinazioni; l'algoritmo di backtracing costruisce una sequenza $x_1,\cdots,x_i$, scegliendo ad ogni passo un nuovo elemento $x_{i+1}$ da aggiungere alla sequenza, ed analizza se questa sequenza ha possibilità di successo. Se è una soluzione mantiene la sequenza, altrimenti sceglie un altro elemento $x_{i+1}$ da aggiungere alla sequenza. 
+Una condizione principale è di non poter tornare indietro per elementi già visitati, e presenti nella sequenza. Questa condizione dipende dal problema su cui viene utilizzato l'algoritmo. 
+
+
+Un problema tipico dell'informatica è la somma di sottoinsiemi. dato un insieme di interi positivi $S$ ed un intero $n$, determinare un sottoinsieme di $S$: $Y\subseteq S$, tale che la somma degli elementi di $Y$ sia uguale al valore dell'intero $n$. 
+
+Si risolve mediante il backtracking, considerando come lo spazio di ricerca delle soluzioni un albero di tutti i possibili sottoinsiemi di $S$, che rispettano la condizione della somma. Le foglie quindi possono essere delle soluzioni valide oppure sottoinsiemi non validi, quindi non è serve espanderli ulteriormente. Una volta esplorato un sotto-albero viene rimossa la sua radice e si continua la ricerca. 
+%% TODO img albero sottoinsiemi ppt
+
+
+Ad ogni stadio della ricerca si considerano due insiemi degli elementi visitati o da visitare, $\hat{S}$ e $\hat{\bar{S}}$, uno complementare dell'altro. All'inizio si ha che $\hat{S}=\emptyset$ è lo spazio di ricerca delle soluzioni e $\hat{\bar{S}}=S$. 
+Se la somma degli elementi di $\hat{S}$ è maggiore di $n$ si ha una soluzione non valida, e si scarta l'ultimo elemento aggiunto, se è uguale ad $n$ si ha identificato una soluzione. Se la somma è minore invece ed $\hat{\bar{S}}=\emptyset$ allora non è una soluzione valida, se non è vuoto allora si sceglie un elemento $x\in\hat{\bar{S}}$, e si cerca una soluzione aggiungendo $x$ alla soluzione $\hat{S}$ con $\hat{S}\cup\{x\}$ e $\hat{\bar{S}}\setminus\{x\}$ oppure senza aggiungerlo alla soluzione con $\hat{S}$ e $\hat{\bar{S}\setminus\{x\}}$ 
+
+Per implementare un algoritmo risolutivo di questo problema si considera una funzione ausiliaria \verb|sum'| che somma tutti gli elementi di una lista:
+\begin{minted}{ocaml}
+    let sum' l =
+        let rec aux tot = function
+              [] -> tot
+            | x::xs -> aux(tot+x) xs
+        in aux 0 l
+\end{minted}
+
+Si definisce un'eccezione \verb|NotFound| in caso la soluzione individuata non rappresenta una soluzione del problema:
+\begin{minted}{ocaml}
+    exception NotFound
+\end{minted}
+Si implementa ora l'algoritmo:
+\begin{minted}{ocaml}
+    let search_subset set tot = 
+        let rec search_aux solution others tot' =
+            let s = sum' solution
+            in if s= tot' then solution
+               else if s > tot' then raise NotFound
+               else match others with
+                     [] -> raise NotFound
+                   | x::xs -> try search_aux (x::solution) xs tot
+                              with NotFound -> search_aux solution xs tot
+        in search_aux [] set tot
+\end{minted}
+
+%% TEST search_subset [5;4;6;8;3;53;7;0;24;9] 15
+
+
+Per creare una versione generale che restituisce tutte le possibili soluzioni, si creano delle funzioni ausiliarie:
+\begin{minted}{ocaml}
+    let rec mapcons a = function
+          [] -> []
+        | l::ls -> (a::l) :: (mapcons a ls)
+\end{minted}
+
+In questo modo si può definire la funzione \verb|search_all| che cerca tutte le possibili soluzioni:
+\begin{minted}{ocaml}
+    let rec search_all tot = function
+          [] -> if tot > 0 then []
+                else [[]] 
+        | x::xs -> if x > tot then serach_all tot xs
+                   else mapcons 
+\end{minted}
+%% TODO finire
 
 \end{document}
