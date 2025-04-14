@@ -283,7 +283,6 @@ Per controllare i caratteri di una stringa si usa la funzione \verb|get| del mod
 \end{minted}
 % primo_non_numerico "111a";;
 
-
 \subsection{Dichiarazioni Locali}
 
 All'interno di una funzione si possono dichiarare ulteriori espressioni, con il costrutto \verb|let...in|, dove si dichiara l'espressione normalmente con \verb|let|, seguito da \verb|in|, dove vengono passati i parametri da applicare all'espressione locale. Le variabili definite nella dichiarazione locale sono variabili locali, inizializzate nel \verb|in|, queste hanno un valore solamente all'interno dell'espressione locale. Quando viene valutata la funzione, questa variabile non ha più valore, viene quindi creato un legame temporanea nell'ambiente quando viene invocata quest'espressione locale tramite l'\verb|in|. All'interno di una funzione locale, sono visibili i parametri globali della funzione esterna, e possono essere usati e modificati all'interno di espressioni locali. 
@@ -816,5 +815,75 @@ In questo modo si può definire la funzione \verb|search_all| che cerca tutte le
                    else mapcons 
 \end{minted}
 %% TODO finire
+
+\subsubsection{Problema delle 8 Regine}
+
+Un problema comune chiamato problema delle 8 regine, consiste nell'individuare su una scacchiare una configurazione di otto regine, in modo che non siano mai sotto attacco. Poiché le regine possono attaccare su l'intera riga e colonna dove sono disposte, un modo per semplificare il problema, consiste nel posizionare le regine in tutte le righe e colonne, senza avere più regine sulla stessa riga e colonna, altrimenti sarebbero sicuramente sotto attacco. 
+Il problema quindi consiste nel trovare una configurazione di otto regine, dove le diagonali non incontrano mai altre regine. 
+Utilizzando il metodo della soluzione incrementale consiste nel piazzare una regina su una casella, e controllare se mettendo le restanti regine si trova una soluzione valida, altrimenti si ritorna a questa posizione iniziale e si sceglie un'altra casella. 
+
+Scomponendo il problema in sotto-problemi è sicuramente necessario avere una funzione che indica se una regina è sotto attacco. Questa funzione deve avere come parametri due posizioni, quindi due coppie di interi, e deve restituire un booleano se queste due posizione, contenessero delle regine, sarebbero sotto attacco l'una rispetto all'altra. Anche se non si tratta di uno scacco, è più intuitivo parlare di scacco, piuttosto di attacco, per indicare che la soluzione non è valida. 
+Date due coppie di interi $i,j$ e $m,n$ se le due regine sono sulla stessa diagonale ascendente, allora la distanza attraversata in diagonale deve essere uguale, questa distanza si ottiene sommando le due coordinate. Mentre per determinare se sono sulla stessa diagonale discendente bisogna controllare che scendendo dalle coordinate $i$, $j$ a $i-m$ e $j-n$ ci si trova nella stessa diagonale. 
+Mentre sono sicuramente sotto attacco se la colonna o la riga è uguale. 
+\begin{minted}{ocaml}
+    let scacco ( i, j ) ( m, n ) =
+        i = m || ( i - m = j - n) || ( i + j = m + n ) || j = n
+\end{minted}
+
+
+Poiché su ogni colonna può esserci una sola colonna, una regina viene individuata in maniera univoca solamente dalla sua colonna. Per sapere su quale riga si trova, si considera una lista, dove l'indica su quale riga si trova, mentre il valore contenuto è variabile ed indica la colonna su cui si trova attualmente nella scacchiera. Quindi la riga delle regine è sempre fissata, mentre possono traslare sulle colonne:
+\begin{minted}{ocaml}
+    let board = [1;2;3;4;5;6;7;8]
+\end{minted}
+% soluzione corretta:
+% let board = [6;3;1;8;5;2;4;7]
+In questa rappresentazione, quindi non è necessaria la condizione per il controllo sulla riga:
+\begin{minted}{ocaml}
+    let scacco (i, j) (m, n) =
+        i = m || (i - m = j - n) || (i + j = m + n)
+\end{minted}
+Per evitare di accedere alla lista per ottenere l'indice si può realizzare direttamente una lista di coppie. Per passare a questa rappresentazione si crea una funzione ausiliaria:
+\begin{minted}{ocaml}
+    let combine l = 
+        let rec aux n acc = function
+              [] -> acc
+            | x::xs -> aux (n + 1) ((x,n)::acc) xs
+        in List.rev(aux 1 [] l)
+\end{minted}
+Si crea quindi una funzione \verb|safe| che controlla data una configurazione della scacchiera, se una certa riga $m$ è libera. %% ??
+Questa funzione prova ad aggiungere una regina alla riga $m$, se non sono presenti regine sulla scacchiera allora si può aggiungere senza problemi, altrimenti bisogna controllare se si può posizionare su una delle colonne della riga $m$, senza che sia sotto attacco. Se ciò non è possibile allora restituisce falso. 
+% let board = [1;1;1]
+% safe board 1
+% \begin{minted}{ocaml}
+%     let safe board m =
+%         let c = List.length board + 1 in 
+%         let rec aux n = function
+%               [] -> false
+%             | x::xs -> scacco (x, n) (m, c) || aux (n + 1) xs
+%         in not (aux 1 board)    
+% \end{minted}
+\begin{minted}{ocaml}
+    let safe board m =
+        let n = List.length board
+        in let rec aux = function
+              [] -> true
+            | (i, j)::xs -> not (scacco (i, j) (m, n + 1)) && aux xs
+        in aux (combine board)    
+\end{minted}
+
+Il problema ora consiste nell'utilizzare questa funzione \verb|safe| per trovare una soluzione al problema. Si definisce un'eccezione \verb|NotFound| in caso non si è trovata una soluzione: 
+\begin{minted}{ocaml}
+    exception NotFound;;
+    let queens n = 
+        let rec aux sol i j = 
+            if j > n then sol
+            else if i > n then raise NotFound
+                 else if safe sol i then 
+                          try aux (sol@[i]) 1 (j + 1)
+                          with NotFound -> aux sol (i + 1) j
+                      else aux sol (i + 1) j
+        in aux [] 1 1
+\end{minted}
+% parte da una lista vuota sol, aggiungere uno alla volta, fino ad n
 
 \end{document}
