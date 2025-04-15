@@ -886,4 +886,112 @@ Il problema ora consiste nell'utilizzare questa funzione \verb|safe| per trovare
 \end{minted}
 % parte da una lista vuota sol, aggiungere uno alla volta, fino ad n
 
+\subsection{Funzioni di Ordine Superiore}
+
+Funzioni di ordine superiore sono funzioni che prendono come argomento o restituiscono una funzione, il tipo di una funzione di ordine di una funzione ha più di una freccia. La funzione \verb|sum| è una funzione di ordine superiore:
+\begin{minted}{ocaml}
+    let rec sum f lower upper =
+        if lower > upper then 0
+        else f lower + sum f (lower + 1) upper
+\end{minted}
+Il tipo di \verb|sum| è:
+\begin{minted}[mathescape, escapeinside=||]{ocaml}
+     - sum: (int |$\rightarrow$| int) |$\rightarrow$| (int |$\rightarrow$| (int |$\rightarrow$| int)) 
+\end{minted}
+Questa funzione simula il comportamento della sommatoria, accetta come argomento una funzione di cui eseguire la somma, dati i limiti superiore ed inferiore. 
+
+Funzioni di ordine superiore sulle liste sono la funzione di ordinamento e per iterare sui suoi elementi \verb|List.sort| e \verb|List.iter|. 
+Altre funzioni importanti sono:
+\begin{itemize}
+    \item \verb|List.map:('a| $\rightarrow$ \verb|'b)| $\rightarrow$ \verb|'a list| $\rightarrow$ \verb|'b list|
+    \item \verb|List.for_all: ('a| $\rightarrow$ \verb|bool)| $\rightarrow$ \verb|'a list| $\rightarrow$ \verb|bool|
+    \item \verb|List.exists: ('a| $\rightarrow$ \verb|bool)| $\rightarrow$ \verb|'a list| $\rightarrow$ \verb|bool|
+    \item \verb|List.find: ('a| $\rightarrow$ \verb|bool)| $\rightarrow$ \verb|'a list| $\rightarrow$ \verb|'a'|
+    \item \verb|List.filter: ('a| $\rightarrow$ \verb|bool)| $\rightarrow$ \verb|'a list| $\rightarrow$ \verb|'a list|
+\end{itemize}
+
+La funzione \verb|map|, data una lista che gli viene passata crea una mappa associando ciascun elemento della lista $\alpha$ ad un elemento $\beta$, applicando su ognuno di essi la funzione passata, creando quindi una lista $\beta$. 
+La funzione \verb|for_all| prende come parametro una lista, ed un predicato e restituisce un booleano se tutti gli elementi della lista soddisfano il predicato ricevuto in argomento. 
+Analogamente \verb|exists| restituisce un booleano se esiste almeno un elemento della lista che soddisfa il predicato passato come parametro. 
+La funzione \verb|find| trova e restituisce, se esiste, il primo elemento di una lista che soddisfa un predicato passato come argomento. 
+Analogamente la funzione \verb|filter| restituisce tutti gli elementi della lista che soddisfano il predicato, in pratica rimuove da una lista tutti gli elementi che non soddisfano una certa condizione. Mentre se nessun elemento della lista soddisfa il predicato, solleva un'eccezione. 
+
+Un'applicazione di \verb|map| consiste in una funzione \verb|inits| che restituisce tutti i segmenti iniziali di una lista passata come argomento:
+\begin{minted}{ocaml}
+    inits [1;2;3;...;n] = [[1];[1;2];...[1;2;...;n]]
+\end{minted}
+Si considera la sua implementazione:
+\begin{minted}{ocaml}
+    let rec inits = function
+          [] -> []
+        | [x] -> [[x]]
+        | x::xs -> [x]::(List.map ((@)[x]) (inits xs) )
+\end{minted}
+
+\subsubsection*{Esercizi}
+
+Si definisca la funzione \verb|find|, definita nel modulo List, tale che \verb|find p lst| restituisca il primo elemento della lista \verb|lst| che soddisfa il predicato \verb|p|, altrimenti solleva un'eccezione. 
+\begin{minted}{ocaml}
+    exception NotFound;;
+    let rec find p = function
+          [] -> raise NotFound
+        | x::xs -> if (p x) then x
+                   else find p xs
+\end{minted}
+
+Si definisce la funzione \verb|takeawhile p lst| che riporti la più lunga parte iniziale di \verb|lst| costituita da tutti gli elementi che soddisfano il predicato \verb|p|. 
+\begin{minted}{ocaml}
+    let rec takeawhile p = function
+          [] -> []
+        | x::xs -> if (p x) then x::(takeawhile p xs)
+                   else []
+\end{minted}
+Definire ora un predicato \verb|p|, tale che la funzione \verb|takeawhile| restituisca la parte iniziale contenente solo numeri pari:
+\begin{minted}{ocaml}
+    takeawhile (function x -> x mod 2 = 0) l    
+\end{minted}
+
+Si definisca la funzione \verb|partition: ('a| $\rightarrow$ \verb|bool)| $\rightarrow$ \verb|'a list| $\rightarrow$ \verb|('a list * 'a list)|, tale che applicata ad un predicato \verb|p| ed una lista \verb|lst| restituisca una coppia di liste, dove la prima contiene tutti gli elementi che soddisfano il predicato, mentre la seconda lista contiene tutti gli elementi che non lo soddisfano:
+\begin{minted}{ocaml}
+    let partition p l =
+        let rec aux (yes, no) = function
+              [] -> (yes, no)
+            | x::xs -> if (p x) then aux ((yes@[x]), no) xs
+                       else aux (yes, (no@[x])) xs
+        in aux ([], []) l    
+\end{minted}
+
+Definire la funzione \verb|pairwith|, che dato un elemento ed una lista restituisce una lista di coppie formate dall'elemento passato e l'elemento corrispondente della lista passata, utilizzando \verb|List.map|
+\begin{minted}{ocaml}
+    let pairwith x l = List.map (function y -> (x, y) ) l
+\end{minted}
+
+Definire la funzione \verb|setdiff| per la differenza insiemistica, utilizzando \verb|List.filter|:
+% \begin{minted}{ocaml}
+%     let rec isin l x = match l with
+%           [] -> true
+%         | y::ys -> if (x = y) then false
+%                    else isin ys x;;
+%     let setdiff l1 l2 = List.filter (isin l2) l1
+% \end{minted}
+
+\begin{minted}{ocaml}
+    let mem l x = List.exists ((=) x) l;;
+    let setdiff l1 l2 = List.filter (not (mem l2)) l1
+\end{minted}
+
+Un'altra soluzione possibile è la seguente:
+\begin{minted}{ocaml}
+    list rec setdiff l1 = function
+          [] -> l1
+        | x::xs -> setdiff(List.fiter (function x -> x <> n) l1) xs    
+\end{minted}
+
+%% TODO esempio powerset
+\begin{minted}{ocaml}
+    let rec powerset = function
+          [] -> [[]]
+        | x::xs -> []::[[x]]::(List.map ((@) [x]) (powerset xs))
+\end{minted}
+
 \end{document}
