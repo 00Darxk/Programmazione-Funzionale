@@ -25,14 +25,13 @@
 \addtolength{\topmargin}{-12.0pt}
 \graphicspath{ {./Immagini/} }
 
-%% TODO add metadata
 \hypersetup{
     colorlinks=true,
     linkcolor=black,
     pdftitle={Appunti di Programmazione Funzionale},
     pdfauthor={Giacomo Sturm},
-    pdfsubject={},
-    pdfkeywords={}
+    pdfsubject={Programmazione Funzionale, OCaml, ML},
+    pdfkeywords={Programmazione Funzionale, OCaml, ML}
 }
 
 \newsavebox{\tempbox} %{\raisebox{\dimexpr.5\ht\tempbox-.5\height\relax}}
@@ -251,8 +250,6 @@ Per le coppie il costruttore è \verb|(,)|, l'insieme tra parentesi e virgola, a
 
 \clearpage
 
-%% TODO add esercitazione n. 1
-
 \section{PF02: Ricorsione e Pattern}
 
 \subsection{Definizioni Ricorsive}
@@ -394,147 +391,285 @@ Anche nelle dichiarazioni di funzioni i parametri sono pattern, permettendo di e
 
 In generale quindi le espressioni \verb|function| sono della forma:
 \begin{minted}{ocaml}
-    function   P1 -> E1
-             | P2 -> E2
-             |   ...
-             | Pn -> En
+    function  P1 -> E1
+            | P2 -> E2
+            |   ...
+            | Pn -> En
 \end{minted}
-Dove ogni pattern \verb|Pi| ha lo stesso tipo \verb|Tp| ed una sua espressione associata di stesso tipo \verb|Te|. 
-Il tipo dell'espressione \verb|function| è quindi \verb|Tp| $\rightarrow$ \verb|Te|. Si possono anche utilizzare pattern multipli, specificando i pattern da assegnare ad una certa espressione divisi da \texttt{|}. In questo modo si possono scrivere in modo estremamente sintetico e semplice espressioni e funzioni. Si considera un espressione per il calcolo del fattoriale:
+Dove ogni pattern \verb|Pi| ha lo stesso tipo \verb|Tp| ed una sua espressione associata di stesso tipo \verb|Te|. Il tipo dell'espressione \verb|function| è quindi \verb|Tp| $\rightarrow$ \verb|Te|. Si possono anche utilizzare pattern multipli, specificando i pattern da assegnare ad una certa espressione divisi da \texttt{|}. In questo modo si possono scrivere in modo estremamente sintetico e semplice espressioni e funzioni:
+\begin{minted}{ocaml}
+    let F = function  P1 -> E1
+                    | P2 -> E2
+                    |   ...
+                    | Pn -> En
+\end{minted}
+Per valutare questa funzione \verb|F| applicata ad un espressione \verb|E|, viene calcolato il valore dell'argomento \verb|V| e si effettua pattern matching con questo valore \verb|V|. A questo punto si effettua il processo descritto precedentemente ed il valore dell'espressione risultante dal pattern match viene riportato come il valore dell'espressione \verb|F E|, e vengono sciolti i legami provvisori. 
+
+
+Si considera un espressione per il calcolo del fattoriale:
 \begin{minted}{ocaml}
     let rec fact = function
           0 | 1 -> 1
         | n -> n * fact(n - 1)
 \end{minted} 
-%% TODO ~53/63 ppt pdf PF02.pdf
 
-% * wao
-
-L'ordine è estremamente importante, poiché dopo aver calcolato il valore dell'argomento, se l'espressione è applicata ad un'espressione, questo valore viene confrontato in ordine dal primo pattern in poi. Se il confronto con un pattern ha successo vengono creati legami nell'ambiente con il valore di argomento, poi viene calcolata l'espressione della funzione tramite questo valore, e vengono rimossi i legami precedentemente creati, mantenendo solamente quelli tra argomento e risultato. 
+L'ordine è estremamente importante, poiché dopo aver calcolato il valore dell'argomento, se il valore è applicata ad un'espressione, questo valore viene confrontato in ordine dal primo pattern in poi. Se il confronto con un pattern ha successo vengono creati legami nell'ambiente con il valore di argomento, poi viene calcolata l'espressione della funzione tramite questo valore, e vengono rimossi i legami precedentemente creati, mantenendo solamente quelli tra argomento e risultato. Quindi anche se il valore potrebbe effettuare un pattern match con pattern successivi, questo viene effettuato solamente con il primo match. 
 
 Si può utilizzare il simbolo \verb|_| come una \textit{wildcard}, può effettuare un pattern match con qualsiasi tipo, ma non viene salvato questo legame nell'ambiente. In un costrutto try-with può essere usata per catturare qualsiasi tipo di eccezione che viene sollevata. 
 
-Un altro costrutto con pattern matching molto utile è il match-with, in modo da confrontare un'espressione data in input con diversi pattern dello stesso tipo dell'espressione di ingresso. Tutti le espressioni di output devono essere dello stesso tipo:
+Un altro costrutto con pattern matching molto utile è il match-with, questo permette di confrontare un'espressione data in input con diversi pattern dello stesso tipo dell'espressione di ingresso. Questo costrutto permette quindi di scegliere quale variabile deve essere confrontata, al contrario del costrutto per \verb|function| che prende l'argomento che gli viene passato, può essere utile in funzioni dove sono richiesti diversi argomenti. Valgono le stesse regole e condizioni generali per i pattern discusse precedentemente:
 \begin{minted}{ocaml}
     match E with
-        P1 -> E1
+          P1 -> E1
         | ...
         | Pn -> En
 \end{minted}
+Per valutare queste espressioni viene valutata l'espressione in input e ne viene computato il valore \verb|V|, confrontandolo con ogni \verb|P| pattern in ordine. Viene creato il legame con il primo pattern \verb|Pi| che effettua un match ed aggiunto all'ambiente. In seguito viene calcolato il valore dell'espressione \verb|Ei| corrispondente e sciolti i legami ausiliari creati. 
+
 
 Si può utilizzare per definire funzioni esplicitando i parametri presi in argomento, si considera l'esempio del fattoriale:
 \begin{minted}{ocaml}
     let rec fact n =
         match n with
-            0 -> 1
+              0 -> 1
             | _ -> n * fact(n - 1)
 \end{minted}
-Per valutare queste espressioni viene valutata l'espressione in input e ne viene computato il valore, confrontandolo con ogni pattern in ordine. Viene creato il legame con il primo pattern che effettua un match ed aggiunto all'ambiente. In seguito viene calcolato il valore dell'espressione corrispondente e sciolti i legami ausiliari creati. 
+Quando il pattern matching non è esaustivo OCaml individua il problema, ma è comunque interpreta l'espressione. Se non si riesce ad effettuare alcun un match viene sollevato un errore di tipo \verb|Match_failure|. 
 
-Quando il pattern matching non è esaustivo OCaml individua il problema, ma è comunque interpreta l'espressione. Se non si riesce ad effettuare un match viene sollevato un errore. 
+\subsubsection*{Esempio: \texttt{split\_string}}
 
-\subsection*{esercitazione}
-
-Definire una funzione \verb|ultime_cifre:| \verb|-> int * int| che riporti il valore intero delle due ultime cifre di un \verb|int|. Dato un numero, il suo modulo base 10 restituisce l'ultima cifra. Mentre per ottenere la penultima si effettua una divisione intera per 10 per eliminare l'ultima cifra e si riapplica il modulo base 10 per ottenere questa cifra:
+Utilizzando il pattern matching si può semplificare in modo considerevole la precedente implementazione della funzione, rimuovendo i vari costrutti condizionali annidati con un solo costrutto match:
 \begin{minted}{ocaml}
-    let ultime_cifre x = (abs(x) mod 10, abs(x/10) mod 10);;
+    let evaluate s = 
+        let (n, op, m) = split_string s
+        in match op with
+              '+' -> n + m
+            | '-' -> n - m
+            | '*' -> n * m
+            | '/' -> n / m
+            |  _  -> raise BadOperation    
 \end{minted}
 
-%% TODO esercitazione 17/3/25
+\clearpage
 
-Una cifra è bella se è 0, 3 o 7; un numero è bello se la sua ultima cifra è bella e la penultima (se esiste) non lo è. Definire un predicato \verb|bello: int -> bool|, che determini se un numero è bello, la funzione non deve mai sollevare eccezioni, ma riportare sempre un \verb|bool|. 
-\begin{minted}{ocaml}
-    let bello x = 
-        match abs(x mod 10) with
-            0 | 3 | 7 -> (match (abs(x mod 10))/10 with
-                0 | 3 | 7 -> x < 10
-                    3 | 7 -> false
-                    | 0 -> x < 100
-                    | _ -> true)
-            | _ -> false;;
+\section{PF03: Costrutti Imperativi e I/O}
+
+Su OCaml nel modulo Pervasives sono presenti delle funzioni per la stampa sullo standard output \verb|stdout|, \verb|print_string| e \verb|print_int| queste funzioni sono di tipo: 
+\begin{minted}[mathescape, escapeinside=||]{ocaml}
+    val print_string: string |$\rightarrow$| unit
+    val print_int: int |$\rightarrow$| unit
 \end{minted}
+Dove il tipo \verb|unit| contiene un solo elemento \verb|()|. Si vuole realizzare una funzione che permette di stampare a schermo tutti gli interi compresi tra due argomenti $n$ e $m$. 
 
-Scrivere una funzione \verb|data: int * string -> bool|, che applicata ad una coppia \verb|(d, m)| di un intero \verb|d| e una stringa \verb|m|, determini se la coppia rappresenta una data corretta, assumendo che l'anno non sia bisestile, si assuma che i mesi siano rappresentati da stringhe con caratteri minuscoli. La funzione on deve sollevare eccezioni, ma riportare sempre un \verb|bool|. 
-È utile scrivere una funzione \verb|gdm| per determinare i giorni di un mese:
-\begin{minted}{ocaml}
-    let gdm m = 
-        match with
-        "gennaio"  | "marzo" | "maggio" | "luglio" | "agosto" | "ottobre" | "dicembre" -> 31
-        | "aprile" | "giugno" | "settembre" | "novembre" -> 30
-        | "febbraio" -> 28
-        | _ -> 0
-\end{minted}
-La funzione principale è quindi:
-\begin{minted}{ocaml}
-    let data (d,m) = d <= gdm m && d > 0;;
-\end{minted}
 
-\subsection{Costrutti Imperativi}
-
-Esistono delle funzioni di stampa a schermo, che inviano una funzione allo \verb|stdout|:
-\begin{minted}{ocaml}
-    val print_string: string -> unit
-    val print_int: int -> unit
-\end{minted}
-Queste funzioni restituiscono un solo elemento \verb|()|. 
-
-Data una serie di espressioni \verb|Ei|, l'espressione formata dalla concatenazione di queste, utilizzando un \verb|;| e racchiusi in \verb|()| è anch'essa un'espressione, questi valori vengono calcolati ma non vengono stampati a schermo, solo quello dell'ultima espressione:
+In OCaml si può realizzare una sequenza di comandi con una notazione simile a quella di una tupla, solamente utilizzando \verb|;| al posto di virgole semplici \verb|,|:
 \begin{minted}{ocaml}
     ( E1 ; E2 ; ... ; En)
 \end{minted}
-Il tipo e valore di questa espressione è il tipo ed il valore dell'ultima espressione. Anche se ci sono errori nelle espressioni precedenti, continua la valutazione dell'espressione, poiché sono espressioni separate. 
+Se \verb|Ei| sono espressioni, allora anche questo costrutto è un'espressione formata dalla concatenazione di queste espressioni. Il tipo ed il valore di quest'espressione è dato dall'ultima espressione \verb|En|. Tutte queste espressioni vengono valutate da sinistra verso destra, ma i loro valori vengono ignorati, tranne quello dell'ultima espressione. 
+Quindi si potrebbe utilizzare questo costrutto per effettuare tutte le stampe necessarie da questa funzione. 
+Se sono presenti degli errori in una di queste espressioni vengono ignorati, e continua la valutazione delle espressioni successive. 
 
-%% TODO add 17-18/3/25 
-%% TODO >= 5 / 12 ppt 
-%% TODO add esercitazione 24/3/25
-
-%% caratteristica di OCaml di modificare variabili con costrutti presenti in OCaml, non significa che è lecito utilizzarli essendo un corso di programmazione funzionale
-
-
-
-
-
-%% LISTE
-
-Le liste sono sequenze finite di elementi dello stesso tipo, dove \verb|list| è il costruttore delle liste, preceduto dal tipo degli elementi della lista. La lista vuota è un oggetto polimorfo, indicato con \verb|[]|. L'inserimento in testa, \textit{cons}, è un'operazione fondamentale denotata da \verb|::|, infisso. Si possono quindi realizzare liste in modo induttivo:
+Risulta scomodo provare ad implementare la funzione richiesta utilizzando questi costrutti, poiché dovrebbe essere dinamica rispetto al numero di stampe da effettuare. Si vuole implementare iterativamente, anche se OCaml non fornisce costrutti imperativi, è possibile simulare il loro comportamento iterativo nel modo seguente:
 \begin{minted}{ocaml}
+    let rec ciclo n m =
+        if n > m then ()
+        else (print_int n;
+              print_newline();
+              ciclo (n + 1) m)    
+\end{minted}
+Questa funzione ricorsiva implementa un'iterazione poiché è \textit{tail recursive}, al ritorno della chiamata ricorsiva, non deve eseguire nulla. 
+
+Si considera una funzione \verb|conta_digits: stringa| $\rightarrow$ \verb|int|, che restituisce il numero di caratteri numerici in una stringa $s$, realizzata in questo modo non è iterativa:
+\begin{minted}{ocaml}
+    let conta_digits s =
+        let rec loop i =
+            try if (s.[i] >= '0' && s.[i] <= '9') then 1 + loop (i + 1)
+                else loop (i + 1)
+            with _ -> 0
+        in loop 0    
+\end{minted}
+Poiché la funzione \verb|loop| non è tail recursive, dato che alla fine di una ricorsione deve ancora effettuare l'operazione di addizione, sulla base del risultato del seguente passo ricorsivo \verb|1 + loop (i + 1)|. Per renderla iterativa, bisogna effettuare quest'operazione prima dell'esecuzione del seguente passo ricorsivo. Si utilizza quindi una variabile di accumulazione \verb|acc|, che ad ogni passo ricorsivo contiene il risultato del passo. In questo modo ad ogni passo ricorsivo si sono già effettuate tutte le operazioni, prima di passare al passo seguente, quindi rappresenta un algoritmo iterativo:
+\begin{minted}{ocaml}
+    let conta_digits s =
+        let rec loop i acc =
+            try if (s.[i] >= '0' && s.[i] <= '9') then loop (i + 1) (acc + 1)
+                else loop (i + 1) acc
+            with _ -> acc
+        in loop 0 0    
+\end{minted}
+Questo accumulatore \verb|acc| rappresenta il risultato parziale di un'iterazione, inizializzato a zero. Questo è il modo in cui vengono realizzati algoritmi ricorsivi in OCaml, dove non sono presenti costrutti imperativi. 
+
+Per leggere input da \verb|stdin| sempre nel modulo Pervasives sono presenti le funzioni \verb|read_line| e \verb|read_int| di tipo \verb|unit| $\rightarrow$ \verb|string| o \verb|int|. 
+Si vuole realizzare una funzione che legga degli interi terminata da un punto, e ne restituisca la loro somma:
+\begin{minted}{ocaml}
+    let rec somma () =
+        let s = read_line
+        in if s="." then 0
+           else (int_of_string s) + somma ()    
+\end{minted}
+Per realizzare lo stesso algoritmo in versione iterativa, bisogna implementare un accumulatore, in una funzione ausiliaria \verb|aux|:
+\begin{minted}{ocaml}
+    let somma () =
+        let rec aux acc = 
+            let s = read_line ()
+            in if s="." then acc
+               else aux ((int_of_string s) + acc)
+        in aux 0
+\end{minted}
+La funzione ausiliaria \verb|aux| applicata su un argomento $n$ restituisce $n$ sommato agli interi letti dallo \verb|stdin|. Si possono utilizzare le eccezioni, in modo poco elegante, per rendere più sintetico questo approccio. Invece di controllare se il carattere letto è \verb|.| si può effettuare la conversione ad intero, in un try-with, e se la conversione non ha successo, allora termina l'esecuzione, poiché si suppone sia stato passato il carattere \verb|.|. Dato che il comportamento della funzione è analogo al precedente, in questo modo anche se viene inserito un carattere che non è un intero non viene terminata l'esecuzione senza output:
+\begin{minted}{ocaml}
+    let somma () =
+        let rec aux acc =
+            try let n = int_of_string (read_line ())
+                in aux (n + acc)
+            with _ -> acc
+        in aux 0
+\end{minted}
+
+%% FIXME skipped numero_somma e numero_somma_it
+
+Nei linguaggi iterativi non esiste l'assegnazione quindi un ciclo viene implementato da un costrutto ricorsivo. Questo è la funzione \verb|aux|, che presenta una variabile in più, l'accumulatore \verb|acc| per memorizzare il risultato parziale dell'iterazione. Gli argomenti di questa funzione sono le variabili che vengono modificate nel ciclo. L'operazione principale richiama quella ausiliaria, inizializzando l'accumulatore. In generale questa funzione ausiliaria può avere un corpo del tipo:
+\begin{minted}{ocaml}
+    if <condizione-uscita> then <valore-uscita>
+    else <chiamata-ricorsiva> <argomenti-modificati>
+\end{minted}
+Gli argomenti modificati sono variabili modificate durante l'iterazione, compreso l'accumulatore. Si considera quindi una possibile implementazione iterativa dell'operazione fattoriale, precedentemente definita ricorsivamente come:
+\begin{minted}{ocaml}
+    let rec fact = function
+          0 | 1 -> 1
+        | n -> n * fact (n - 1)
+\end{minted}
+Iterativamente diventa:
+\begin{minted}{ocaml}
+    let fact' n = 
+        let rec aux acc = function
+              0 -> acc
+            | n -> aux (n * acc) (n - 1)
+        in aux 1 n
+\end{minted}
+Questa funzione \verb|aux| è iterativa, poiché dopo aver raccolto il risultato per un'iterazione, non deve eseguire altre operazioni. Mentre in un processo ricorsivo, dopo aver ottenuto il risultato della ricorsione bisogna effettuare altre operazioni, nel caso del fattoriale bisogna moltiplicare il valore ottenuto, il fattoriale di $n-1$, per $n$. 
+
+
+Un processo ricorsivo esegue le operazioni al ritorno dalla ricorsione, mentre in un processo iterativo le operazioni vengono svolte prima della ricorsione l'ultima chiamata ricorsiva può riportare il suo risultato direttamente alla prima. Inoltre un processo ricorsivo ha uno spazio lineare al numero di chiamate ricorsive, mentre in un processo iterativo si usa spazio costante, poiché non c'è bisogno di salvare in memoria le altre chiamate ricorsive. 
+
+Se un problema $P_1$ può essere convertito in un altro problema $P_2$ in modo che una soluzione al primo sia anche soluzione al secondo, senza siano necessari ulteriori calcoli, si dice che il problema $P_1$ è stato ridotto in $P_2$, analogamente si dice che $P_2$ è riduzione di $P_1$. Se una funzione ricorsiva è definita in modo che tutte le sue chiamate ricorsive sono delle riduzioni, allora è una funzione ricorsiva di coda, tail recursive. 
+
+\clearpage
+
+\section{PF04: Liste}
+
+\subsection{Liste}
+
+%% TODO add caratteristica di OCaml di modificare variabili con costrutti presenti in OCaml, non significa che è lecito utilizzarli essendo un corso di programmazione funzionale
+
+Le liste sono sequenze finite di elementi dello stesso tipo, dove \verb|list| è il costruttore delle liste, preceduto dal tipo degli elementi della lista. La lista vuota è un oggetto polimorfo, indicato con \verb|[]|, di tipo \verb|'a list|. L'inserimento in testa, \textit{cons}, è un'operazione fondamentale denotata da \verb|::|, infisso. I costruttori per le liste sono:
+\begin{minted}{ocaml} 
     [] : 'a list
-    :: : 'a -> 'a list -> 'a list 
+    :: : 'a -> 'a list -> 'a list
 \end{minted}
-%% TODO fix def ::
-I selettori di una lista sono \verb|.hd|,\textit{head}, che restituisce il primo elemento e \verb|tl|, \textit{tail}, restituisce l'ultimo elemento. Applicati su una lista vuota viene sollevata un'eccezione. 
-%% TODO definizioni di length lista 
-%% TODO tabella pattern match
+Si possono quindi realizzare liste in modo induttivo, data una lista vuota \verb|[]|, di tipo $\alpha$ \verb|list|, se \verb|x| è di tipo $\alpha$, ed \verb|xs| è di tipo $\alpha$ \verb|list|, allora \verb|(x::xs)| è una $\alpha$ \verb|list|, e nient'altro è un $\alpha$ \verb|list|. 
+In questo modo è possibile generare tutte le possibili liste per un dato tipo, per stadi, realizzando un albero radicato in \verb|[]|, ed ogni figlio rappresenta l'aggiunta di un elemento del tipo tramite \verb|x::xs|, dove \verb|xs| è la lista corrispondente al nodo padre. 
+%% TODO add img albero generatore liste per tipo
 
-%% MERGE SORT LIST
+I selettori di una lista sono \verb|List.hd: 'a list| $\rightarrow$ \verb|'a|, \textit{head}, che restituisce il primo elemento e \verb|List.tl: 'a list| $\rightarrow$ \verb|'a list|, \textit{tail}, restituisce la lista corrispondente senza il primo elemento. Non sono definiti sulla lista vuota \verb|[]|, quindi applicati su di essa viene sollevata un'eccezione.  
+
+Le liste possono essere costruite ricorsivamente partendo da una lista vuota \verb|[]|, supponendo di poter calcolare il valore su una lista \verb|xs|, si determina come calcolare il valore della generica lista \verb|x::xs|. 
 
 
+Si vuole determinare una funzione che determina il numero degli elementi in una lista \verb|length:| \verb|'a list| $\rightarrow$ \verb|int|. Per implementarla ricorsivamente si considera una lista vuota di lunghezza 0; mentre per un caso generico, la sua lunghezza è $1+n$, dove $n$ è la lunghezza della lista rimosso il primo elemento, si suppone si possa calcolare questo valore $n$. 
+La definizione è valida poiché ripetendo l'operazione di coda si arriverà necessariamente alla lista vuota \verb|[]|, la funzione è quindi definita utilizzando il selettore di coda:
 \begin{minted}{ocaml}
-    let rec split = function
-          [] -> ([], [])
-        | [x] -> ([x], [])
-        | x::y::rest -> let (xs, ys) = split rest
-                        in (x::xs, y::ys)
+    let rec length l = 
+        if l = [] then 0
+        else 1 + (length (List.tl l))
 \end{minted}
-Le due parti della lista devono avere la stessa lunghezza, o al massimo variare di uno, ci sono due casi base, se la lista è vuota o ha un sollo elemento. Se si hanno almeno due elementi si spacca a metà la lista, togliendo i primi due elementi \verb|x| e \verb|y| e si mettono in testa allo divisione successiva \verb|xs| \verb|ys|. 
-Si può realizzare in modo più succinto, considerando solo due casi, una lista vuota o non vuota:
+Alternativamente si può utilizzare il pattern matching sulla lista:
 \begin{minted}{ocaml}
-    let rec split = function
-        | [] -> ([], [])
-        | x..xs -> let (as, bs) = split xs
-                    in (x::bs, as)
+    let rec length = function
+          [] -> 0
+        | x::xs -> 1 + (length xs)
+\end{minted}
+In un pattern possono occorrere solo variabili o costruttori, \verb|[]| e \verb|::|. Utilizzando questi due costruttori si può individuare il caso base di una lista vuota \verb|[]| ed il caso con una lista avente almeno un elemento \verb|x::xs|, dove a \verb|x| viene assegnato il valore del primo elemento della lista, ed a \verb|xs| viene assegnato il valore della lista rimanente. 
+Questa modalità è un'alternativa all'uso dei selettori di testa e di coda per le liste. Analogamente si può effettuare pattern matching per un certo numero di elementi specifico in una lista con \verb|[x1;...x;n]|, questo pattern avrà successo solo se la lista su cui si vuole effettuare il match ha esattamente $n$ elementi ed il valore di tutti i componenti \verb|xi| assumerà il valore corrispondente dell'elemento $i-$esimo della lista. Oppure si può realizzare con \verb|x1::...::xn::xs|, dove \verb|xs| conterrà la lista vuota \verb|[]| se la lista su cui si è effettuato il match ha esattamente $n$ elementi, altrimenti sarà composta dalla coda della lista. 
+
+\subsubsection*{Esempio: \texttt{super}}
+
+Si vuole creare una funzione che, date le ultime $n$ estrazioni del superenalotto, restituisca i numeri che sono stati estratti meno volte. Questa funzione \verb|super| prende come parametro la lista di liste \verb|est|, rappresentanti le ultime estrazioni, il numero di interi di ogni estrazione $n$ ed il massimo numero che può essere estratto $h$:
+\begin{minted}[mathescape, escapeinside=||]{ocaml}
+    - super: int list list |$\rightarrow$| int |$\rightarrow$| int |$\rightarrow$| int list
+    super est n h
+\end{minted}
+Si definisce il sotto-problema di determinare quante volte un numero $m$ compreso da 1 ad $h$ compare in tutte le estrazioni \verb|est|. Per poi iterare su tutti i possibili numeri che possono essere estratti. 
+Per determinare questi numeri, si definisce la funzione \verb|upto: int| $\rightarrow$ \verb|int| $\rightarrow$ \verb|int list|, applicata sugli argomenti $i$ $j$ produce una lista da $i$ a $j$: \verb|upto i j =[i;...;j]|:
+\begin{minted}{ocaml}
+    let rec upto i j =
+        if i > j then []
+        else i::(upto (i + 1) j)    
 \end{minted}
 
-%% FUNZIONE MERGESORT
+Per poter utilizzare facilmente la lista delle estrazioni, bisogna appiattirla, da una lista di liste ad una lista, quindi bisogna definire una funzione \verb|flatten:| \verb|'a list list| $\rightarrow$ \verb|'a list|:
 \begin{minted}{ocaml}
-    let rec mergesort = function
+    let rec flatten = function
           [] -> []
-        | [x] -> [x]
-        | l -> let (l1, l2) = split l
-               in merge (mergesort l1) (mergesort l2)
+        | x::xs -> x@(flatten xs)
 \end{minted}
-Nel modulo list sono definite le funzioni head \verb|hd|, tail \verb|tl| già descritte in precedenza, \verb|length|, \verb|flatten| che trasforma una lista di liste in un'unica grande lista, la funzione \verb|sort| che ordina una lista, secondo un qualsiasi ordine definito da una funzione fornita come argomento. 
 
+Si definisce quindi una funzione per contare quante volte uno solo dei numeri possibili è stato estratto, che verrà applicata su tutti i possibili numeri, \verb|conta:| \verb|'a| $\rightarrow$ \verb|'a list| $\rightarrow$ \verb|int|:
+\begin{minted}{ocaml}
+    let rec conta x = function
+          [] -> 0
+        | y::ys -> if x = y then 1 + (conta x ys)
+                   else conta x ys
+\end{minted}
+
+Si definisce ora una funzione per contare tutti questi possibili numeri, \verb|contatutti:| \verb|'a list| $\rightarrow$ \verb|'a list| $\rightarrow$ \verb|('a * int) list|. Il primo argomento $l_1$ è la lista contenente i possibili numeri, mentre il secondo $l_2$ è la lista contenente tutte le estrazioni. 
+Questa funzione restituisce una lista di coppie, dove il primo elemento rappresenta l'elemento cercato, mentre il secondo è il suo numero di occorrenze:
+\begin{minted}{ocaml}
+    let rec contatutti l1 l2 = match l1 with
+          [] -> []
+        | x::xs -> (x, conta x l2)::(contatutti xs l2)    
+\end{minted}
+
+
+Utilizzando le funzioni definite si può ottenere la lista delle coppie dei possibili numeri e la loro occorrenza:
+\begin{minted}{ocaml}
+    contatutti (upto 1 h) (flatten est)    
+\end{minted}
+
+Per scegliere gli elementi che sono stati estratti il numero minore di volte, si può ordinare la lista, utilizzando una funzione \verb|sort:| \verb|('a * 'b) list| $\rightarrow$ \verb|('a * 'b) list|. Si può usare la funzione \verb|List.sort| fornita da OCaml nel modulo List, questa può ordinare una lista passata come parametro rispetto ad una certa relazione d'ordine espressa tramite un'espressione passata come primo argomento alla funzione. Si definisce quindi una relazione d'ordine \verb|comp:| \verb|('a * 'b)| $\rightarrow$ \verb|('c * 'b)| $\rightarrow$ \verb|int| tra due elementi, o coppie, di questa lista:
+\begin{minted}{ocaml}
+    let comp (_, x) (_, y) = if x < y then -1
+                             else if x = y then 0
+                             else 1
+\end{minted}
+Si definisce ora la funzione \verb|sort| come:
+\begin{minted}{ocaml}
+    let sort l = List.sort comp l
+\end{minted}
+
+
+Ottenuta la lista ordinata, per ottenere una lista dei numeri meno estratti, bisogna prima prendere un certo numero di elementi dalla lista ordinata, tramite una funzione \verb|take:| \verb|int| $\rightarrow$ \verb|'a list| $\rightarrow$ \verb|'a list|, che applicata ad un intero $n$ ed una lista $l$ restituisce una sottolista di lunghezza $n$, partendo dalla testa della lista $l$:
+\begin{minted}{ocaml}
+    let rec take n = function
+          [] -> []
+        | x::xs -> if n <= 0 then []
+                   else x::(take (n - 1) xs)
+\end{minted}
+A questo punto non è più di interesse il numero di occorrenze, quindi si definisce una funzione \verb|primi:| \verb|('a * 'b) list| $\rightarrow$ \verb|'a list|, per restituire una lista contenete solo il primo elemento delle coppie:
+\begin{minted}{ocaml}
+    let rec primi = function
+          [] -> []
+        | (x, y)::l -> x::(primi l)
+\end{minted}
+
+Si può quindi definire la funzione \verb|super| come:
+\begin{minted}{ocaml}
+    let super est n h = primi (take n (sort (contatutti (upto 1 h) (flatten est))))    
+\end{minted}
+
+
+%% TODO fix this 15/30 PF04 ppt
 %% upto: upto m n = [m, m+1, ..., n]
 \begin{minted}{ocaml}
     let rec upto m n = 
@@ -636,7 +771,40 @@ Questa funzione permette di comparare due coppie, quindi si può usare per ordin
         print(' (take' dim (sort (contatuttti (upto 1 higher) (flatten0 estrazioni)))))
 \end{minted}
 
-%% DIZIONARIO
+\subsubsection*{Esempio: \texttt{merge sort}}
+
+\begin{minted}{ocaml}
+    let rec split = function
+          [] -> ([], [])
+        | [x] -> ([x], [])
+        | x::y::rest -> let (xs, ys) = split rest
+                        in (x::xs, y::ys)
+\end{minted}
+Le due parti della lista devono avere la stessa lunghezza, o al massimo variare di uno, ci sono due casi base, se la lista è vuota o ha un sollo elemento. Se si hanno almeno due elementi si spacca a metà la lista, togliendo i primi due elementi \verb|x| e \verb|y| e si mettono in testa allo divisione successiva \verb|xs| \verb|ys|. 
+Si può realizzare in modo più succinto, considerando solo due casi, una lista vuota o non vuota:
+\begin{minted}{ocaml}
+    let rec split = function
+        | [] -> ([], [])
+        | x..xs -> let (as, bs) = split xs
+                    in (x::bs, as)
+\end{minted}
+
+%% FUNZIONE MERGESORT
+\begin{minted}{ocaml}
+    let rec mergesort = function
+          [] -> []
+        | [x] -> [x]
+        | l -> let (l1, l2) = split l
+               in merge (mergesort l1) (mergesort l2)
+\end{minted}
+Nel modulo list sono definite le funzioni head \verb|hd|, tail \verb|tl| già descritte in precedenza, \verb|length|, \verb|flatten| che trasforma una lista di liste in un'unica grande lista, la funzione \verb|sort| che ordina una lista, secondo un qualsiasi ordine definito da una funzione fornita come argomento. 
+
+\clearpage
+
+\section{PF05: Collezioni e Backtracking}
+
+
+\subsection{Dizionari}
 
 Un tipo di dato interessante sono il tipo di dato dizionario, una collezione di elementi ciascuno costituito da una coppia chiave-valore. Ogni elemento ha chiave distinta. 
 Su questa collezione si può cercare un elemento per chiave, inserire una coppia di elementi, e cancellare un elemento. 
@@ -662,8 +830,7 @@ Per inserire un valore in un dizionario, bisogna prima eliminare la vecchia copp
 Rappresentare un tipo astratto di dato è costituito da un insieme di oggetti ed un insieme di operazioni su tali oggetti.  %% TODO
 
 
-
-%% INSIEMI 
+\subsection{Insiemi}
 
 Negli insiemi tramite liste bisogna definire le loro operazioni. Si considera una possibile implementazione della differenza tra due insiemi:
 \begin{minted}{ocaml}
@@ -681,76 +848,6 @@ In maniera iterativa:
                        else aux(x::acc l l')
         in aux [] l l'
 \end{minted}
-
-
-
-%% ESERCITAZIONE 
-\begin{minted}{ocaml}
-    exception NoElement ;; 
-    let maxlist = function
-          [] -> raise NoElement
-        | x::xs -> let rec aux m = function
-              [] -> m
-            | x::xs -> if x > m then aux x xs
-                       else aux m xs
-            in aux x xs
-\end{minted}
-
-Si ipotizza di non avere a disposizione l'operatore \verb|@|, definire la concatenazione:
-\begin{minted}{ocaml}
-    let rec append l1 l2 = match l1 with
-          [] -> l2
-        | x::xs -> x::(append xs l2) 
-\end{minted}
-In modo iterativo diventa:
-\begin{minted}{ocaml}
-    let append l1 l2 =
-        let rec aux a = function
-              [] -> a
-            | x::xs -> aux (x::a) xs
-        in aux l2 List.rev(l1)
-\end{minted}
-
-
-\begin{minted}{ocaml}
-    let rec nth n = function
-          [] -> raise NoElement
-        | x::xs -> if n < 0 then raise NoElement
-                   else if n = 0 then x
-                        else nth (n-1) xs;;
-\end{minted}
-
-
-\begin{minted}{ocaml}
-    let rec nondec = function
-          [] | [a] -> true
-        | x::y::xs -> if x > y then false
-                      else nondec (y::xs)
-\end{minted}
-
-
-%% TODO idfk 
-
-\begin{minted}{ocaml}
-    let min_dei_max ls = 
-        let rec listmax acc = function
-              [] -> acc
-            | x::xs -> listmax ((maxlist x)::acc) xs
-        in let rec minlist = function
-              [] -> raise NoElement
-            | x::xs -> try let y = minlist(xs)
-                           in min x y
-                       with _ -> x
-        in minlist(listmax [] ls);;
-\end{minted}
-%% TESTING funzione con ocaml repl
-% min_dei_max [[1;2;3];[3;4;1;0];[78]];;
-
-Concatena l'accumulatore con i massimi di ciascuna lista del secondo argomento, l'argomento implicito è una lista di liste, essendo l'argomento della funzione esterna \verb|ls|. Si può inferire il tipo dato che ad un elemento della lista \verb|x| viene passato come argomento a \verb|maxlist|, quindi deve essere una lista. 
-
-
-
-\verb|split2| agisce in modo simile alla funzione \verb|split| definita precedentemente, divide in due parti ...
 
 \subsection{Backtracking}
 
@@ -886,7 +983,9 @@ Il problema ora consiste nell'utilizzare questa funzione \verb|safe| per trovare
 \end{minted}
 % parte da una lista vuota sol, aggiungere uno alla volta, fino ad n
 
-\subsection{Funzioni di Ordine Superiore}
+\clearpage
+
+\section{Funzioni di Ordine Superiore}
 
 Funzioni di ordine superiore sono funzioni che prendono come argomento o restituiscono una funzione, il tipo di una funzione di ordine di una funzione ha più di una freccia. La funzione \verb|sum| è una funzione di ordine superiore:
 \begin{minted}{ocaml}
@@ -993,5 +1092,119 @@ Un'altra soluzione possibile è la seguente:
           [] -> [[]]
         | x::xs -> []::[[x]]::(List.map ((@) [x]) (powerset xs))
 \end{minted}
+
+\clearpage
+
+\section{Esercitazione 2}
+
+%% TODO add esercitazione n. 1
+
+Definire una funzione \verb|ultime_cifre:| \verb|-> int * int| che riporti il valore intero delle due ultime cifre di un \verb|int|. Dato un numero, il suo modulo base 10 restituisce l'ultima cifra. Mentre per ottenere la penultima si effettua una divisione intera per 10 per eliminare l'ultima cifra e si riapplica il modulo base 10 per ottenere questa cifra:
+\begin{minted}{ocaml}
+    let ultime_cifre x = (abs(x) mod 10, abs(x/10) mod 10);;
+\end{minted}
+
+%% TODO esercitazione 17/3/25
+
+Una cifra è bella se è 0, 3 o 7; un numero è bello se la sua ultima cifra è bella e la penultima (se esiste) non lo è. Definire un predicato \verb|bello: int -> bool|, che determini se un numero è bello, la funzione non deve mai sollevare eccezioni, ma riportare sempre un \verb|bool|. 
+\begin{minted}{ocaml}
+    let bello x = 
+        match abs(x mod 10) with
+            0 | 3 | 7 -> (match (abs(x mod 10))/10 with
+                0 | 3 | 7 -> x < 10
+                    3 | 7 -> false
+                    | 0 -> x < 100
+                    | _ -> true)
+            | _ -> false;;
+\end{minted}
+
+Scrivere una funzione \verb|data: int * string -> bool|, che applicata ad una coppia \verb|(d, m)| di un intero \verb|d| e una stringa \verb|m|, determini se la coppia rappresenta una data corretta, assumendo che l'anno non sia bisestile, si assuma che i mesi siano rappresentati da stringhe con caratteri minuscoli. La funzione on deve sollevare eccezioni, ma riportare sempre un \verb|bool|. 
+È utile scrivere una funzione \verb|gdm| per determinare i giorni di un mese:
+\begin{minted}{ocaml}
+    let gdm m = 
+        match with
+        "gennaio"  | "marzo" | "maggio" | "luglio" | "agosto" | "ottobre" | "dicembre" -> 31
+        | "aprile" | "giugno" | "settembre" | "novembre" -> 30
+        | "febbraio" -> 28
+        | _ -> 0
+\end{minted}
+La funzione principale è quindi:
+\begin{minted}{ocaml}
+    let data (d,m) = d <= gdm m && d > 0;;
+\end{minted}
+
+\clearpage
+
+\section{Esercitazione 3}
+
+\begin{minted}{ocaml}
+    exception NoElement ;; 
+    let maxlist = function
+          [] -> raise NoElement
+        | x::xs -> let rec aux m = function
+              [] -> m
+            | x::xs -> if x > m then aux x xs
+                       else aux m xs
+            in aux x xs
+\end{minted}
+
+Si ipotizza di non avere a disposizione l'operatore \verb|@|, definire la concatenazione:
+\begin{minted}{ocaml}
+    let rec append l1 l2 = match l1 with
+          [] -> l2
+        | x::xs -> x::(append xs l2) 
+\end{minted}
+In modo iterativo diventa:
+\begin{minted}{ocaml}
+    let append l1 l2 =
+        let rec aux a = function
+              [] -> a
+            | x::xs -> aux (x::a) xs
+        in aux l2 List.rev(l1)
+\end{minted}
+
+
+\begin{minted}{ocaml}
+    let rec nth n = function
+          [] -> raise NoElement
+        | x::xs -> if n < 0 then raise NoElement
+                   else if n = 0 then x
+                        else nth (n-1) xs;;
+\end{minted}
+
+
+\begin{minted}{ocaml}
+    let rec nondec = function
+          [] | [a] -> true
+        | x::y::xs -> if x > y then false
+                      else nondec (y::xs)
+\end{minted}
+
+
+%% TODO idfk 
+
+\begin{minted}{ocaml}
+    let min_dei_max ls = 
+        let rec listmax acc = function
+              [] -> acc
+            | x::xs -> listmax ((maxlist x)::acc) xs
+        in let rec minlist = function
+              [] -> raise NoElement
+            | x::xs -> try let y = minlist(xs)
+                           in min x y
+                       with _ -> x
+        in minlist(listmax [] ls);;
+\end{minted}
+%% TESTING funzione con ocaml repl
+% min_dei_max [[1;2;3];[3;4;1;0];[78]];;
+
+Concatena l'accumulatore con i massimi di ciascuna lista del secondo argomento, l'argomento implicito è una lista di liste, essendo l'argomento della funzione esterna \verb|ls|. Si può inferire il tipo dato che ad un elemento della lista \verb|x| viene passato come argomento a \verb|maxlist|, quindi deve essere una lista. 
+
+
+
+\verb|split2| agisce in modo simile alla funzione \verb|split| definita precedentemente, divide in due parti ...
+
+\clearpage
+
 
 \end{document}
