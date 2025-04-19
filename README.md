@@ -2,7 +2,8 @@
 Appunti tratti dal corso di Programmazione Funzionale, Anno Accademico 2024/25, Dipartimento di Ingegneria Civile, Informatica e delle Tecnologie Aeronautiche. 
 
 ## Contenuti:
-- [Appunti](Programmazione-Funzionale.pdf) delle lezioni, tenute l'anno accademico 2024/25 dai professore Giulio Guerrieri;
+ - [Appunti](Programmazione-Funzionale.pdf) delle lezioni, tenute l'anno accademico 2024/25 dai professore Giulio Guerrieri;
+ - [Esercizi](Esercizi/Esercizi-Svolti.pdf) svolti durante il corso;
 
 ## Contenuti del Corso
 

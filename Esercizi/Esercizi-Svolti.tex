@@ -1,0 +1,266 @@
+\documentclass{article}
+
+\usepackage{cancel}
+\usepackage{amsmath,amssymb}
+\usepackage[includehead,nomarginpar]{geometry}
+\usepackage{graphicx} \usepackage{amsfonts} 
+\usepackage{verbatim}
+\usepackage{mathrsfs}  
+\usepackage{lmodern}
+\usepackage{braket}
+\usepackage{bookmark}
+\usepackage{fancyhdr}
+\usepackage{romanbarpagenumber}
+\usepackage{minted}
+%\usepackage{subfig}
+\usepackage[italian]{babel}
+\usepackage{float}
+%\usepackage{wrapfig}
+%\usepackage[export]{adjustbox}
+\usepackage{contour}
+\usepackage[normalem]{ulem}
+\allowdisplaybreaks
+
+\setlength{\headheight}{12.0pt}
+\addtolength{\topmargin}{-12.0pt}
+\graphicspath{ {./Immagini/} }
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    pdftitle={Esercizi Svolti di Programmazione Funzionale},
+    pdfauthor={Giacomo Sturm},
+    pdfsubject={Programmazione Funzionale, OCaml, ML},
+    pdfkeywords={Programmazione Funzionale, OCaml, ML}
+}
+
+\newsavebox{\tempbox} %{\raisebox{\dimexpr.5\ht\tempbox-.5\height\relax}}
+
+
+\makeatother
+\renewcommand{\contentsname}{Indice}
+\numberwithin{equation}{subsection}
+\newcommand{\tageq}{\tag{\stepcounter{equation}\theequation}}
+\AtBeginDocument{%
+    \renewcommand{\figurename}{Fig.}
+}
+\renewcommand{\ULdepth}{1.8pt}
+\contourlength{0.6pt}
+\newcommand{\myuline}[1]{%
+    \uline{\phantom{#1}}%
+    \llap{\contour{white}{#1}}%
+}
+\fancypagestyle{link}{\fancyhf{}\renewcommand{\headrulewidth}{0pt}\fancyfoot[C]{Sorgente del file \LaTeX disponibile al seguente link: \url{https://github.com/00Darxk/Programmazione-Funzionale/}}}
+
+\begin{document}
+
+\title{%
+    \textbf{Programmazione Funzionale}  \\ 
+    \large Esercizi Svolti di Programmazione Funzionale \\
+    \textit{Anno Accademico: 2024/25}}
+\author{\textit{Giacomo Sturm}}
+\date{\textit{Dipartimento di Ingegneria Civile, Informatica e delle Tecnologie Aeronautiche \\
+Università degli Studi ``Roma Tre"}}
+
+\maketitle
+\thispagestyle{link}
+
+\clearpage
+
+
+\pagestyle{fancy}
+\fancyhead{}\fancyfoot{}
+\fancyhead[C]{\textit{Programmazione Funzionale - Università degli Studi ``Roma Tre"}}
+\fancyfoot[C]{\thepage}
+\pagenumbering{Roman}
+
+\tableofcontents
+
+\clearpage
+\pagenumbering{arabic}
+
+
+\section{Esercitazione 1}
+%% TODO add esercitazione n. 1
+
+\clearpage
+
+\section{Esercitazione 2}
+Definire una funzione \verb|ultime_cifre:| \verb|-> int * int| che riporti il valore intero delle due ultime cifre di un \verb|int|. Dato un numero, il suo modulo base 10 restituisce l'ultima cifra. Mentre per ottenere la penultima si effettua una divisione intera per 10 per eliminare l'ultima cifra e si riapplica il modulo base 10 per ottenere questa cifra:
+\begin{minted}{ocaml}
+    let ultime_cifre x = (abs(x) mod 10, abs(x/10) mod 10);;
+\end{minted}
+
+%% TODO esercitazione 17/3/25
+
+Una cifra è bella se è 0, 3 o 7; un numero è bello se la sua ultima cifra è bella e la penultima (se esiste) non lo è. Definire un predicato \verb|bello: int -> bool|, che determini se un numero è bello, la funzione non deve mai sollevare eccezioni, ma riportare sempre un \verb|bool|. 
+\begin{minted}{ocaml}
+    let bello x = 
+        match abs(x mod 10) with
+            0 | 3 | 7 -> (match (abs(x mod 10))/10 with
+                0 | 3 | 7 -> x < 10
+                    3 | 7 -> false
+                    | 0 -> x < 100
+                    | _ -> true)
+            | _ -> false;;
+\end{minted}
+
+Scrivere una funzione \verb|data: int * string -> bool|, che applicata ad una coppia \verb|(d, m)| di un intero \verb|d| e una stringa \verb|m|, determini se la coppia rappresenta una data corretta, assumendo che l'anno non sia bisestile, si assuma che i mesi siano rappresentati da stringhe con caratteri minuscoli. La funzione on deve sollevare eccezioni, ma riportare sempre un \verb|bool|. 
+È utile scrivere una funzione \verb|gdm| per determinare i giorni di un mese:
+\begin{minted}{ocaml}
+    let gdm m = 
+        match with
+        "gennaio"  | "marzo" | "maggio" | "luglio" | "agosto" | "ottobre" | "dicembre" -> 31
+        | "aprile" | "giugno" | "settembre" | "novembre" -> 30
+        | "febbraio" -> 28
+        | _ -> 0
+\end{minted}
+La funzione principale è quindi:
+\begin{minted}{ocaml}
+    let data (d,m) = d <= gdm m && d > 0;;
+\end{minted}
+
+\clearpage
+
+\section{Esercitazione 3}
+
+\begin{minted}{ocaml}
+    exception NoElement ;; 
+    let maxlist = function
+          [] -> raise NoElement
+        | x::xs -> let rec aux m = function
+              [] -> m
+            | x::xs -> if x > m then aux x xs
+                       else aux m xs
+            in aux x xs
+\end{minted}
+
+Si ipotizza di non avere a disposizione l'operatore \verb|@|, definire la concatenazione:
+\begin{minted}{ocaml}
+    let rec append l1 l2 = match l1 with
+          [] -> l2
+        | x::xs -> x::(append xs l2) 
+\end{minted}
+In modo iterativo diventa:
+\begin{minted}{ocaml}
+    let append l1 l2 =
+        let rec aux a = function
+              [] -> a
+            | x::xs -> aux (x::a) xs
+        in aux l2 List.rev(l1)
+\end{minted}
+
+
+\begin{minted}{ocaml}
+    let rec nth n = function
+          [] -> raise NoElement
+        | x::xs -> if n < 0 then raise NoElement
+                   else if n = 0 then x
+                        else nth (n-1) xs;;
+\end{minted}
+
+
+\begin{minted}{ocaml}
+    let rec nondec = function
+          [] | [a] -> true
+        | x::y::xs -> if x > y then false
+                      else nondec (y::xs)
+\end{minted}
+
+
+%% TODO idfk 
+
+\begin{minted}{ocaml}
+    let min_dei_max ls = 
+        let rec listmax acc = function
+              [] -> acc
+            | x::xs -> listmax ((maxlist x)::acc) xs
+        in let rec minlist = function
+              [] -> raise NoElement
+            | x::xs -> try let y = minlist(xs)
+                           in min x y
+                       with _ -> x
+        in minlist(listmax [] ls);;
+\end{minted}
+%% TESTING funzione con ocaml repl
+% min_dei_max [[1;2;3];[3;4;1;0];[78]];;
+
+Concatena l'accumulatore con i massimi di ciascuna lista del secondo argomento, l'argomento implicito è una lista di liste, essendo l'argomento della funzione esterna \verb|ls|. Si può inferire il tipo dato che ad un elemento della lista \verb|x| viene passato come argomento a \verb|maxlist|, quindi deve essere una lista. 
+
+
+
+\verb|split2| agisce in modo simile alla funzione \verb|split| definita precedentemente, divide in due parti ...
+
+\clearpage
+
+\section{Esercitazione 4}
+
+\clearpage
+
+\section{Esercitazione 5}
+
+\clearpage
+
+\section{Esercitazione 6}
+
+Si definisca la funzione \verb|find|, definita nel modulo List, tale che \verb|find p lst| restituisca il primo elemento della lista \verb|lst| che soddisfa il predicato \verb|p|, altrimenti solleva un'eccezione. 
+\begin{minted}{ocaml}
+    exception NotFound;;
+    let rec find p = function
+        | [] -> raise NotFound
+        | x::xs -> if (p x) then x
+                   else find p xs
+\end{minted}
+
+Si definisce la funzione \verb|takeawhile p lst| che riporti la più lunga parte iniziale di \verb|lst| costituita da tutti gli elementi che soddisfano il predicato \verb|p|. 
+\begin{minted}{ocaml}
+    let rec takeawhile p = function
+        | [] -> []
+        | x::xs -> if (p x) then x::(takeawhile p xs)
+                   else []
+\end{minted}
+Definire ora un predicato \verb|p|, tale che la funzione \verb|takeawhile| restituisca la parte iniziale contenente solo numeri pari:
+\begin{minted}{ocaml}
+    takeawhile (function x -> x mod 2 = 0) l    
+\end{minted}
+
+Si definisca la funzione \verb|partition: ('a| $\rightarrow$ \verb|bool)| $\rightarrow$ \verb|'a list| $\rightarrow$ \verb|('a list * 'a list)|, tale che applicata ad un predicato \verb|p| ed una lista \verb|lst| restituisca una coppia di liste, dove la prima contiene tutti gli elementi che soddisfano il predicato, mentre la seconda lista contiene tutti gli elementi che non lo soddisfano:
+\begin{minted}{ocaml}
+    let partition p l =
+        let rec aux (yes, no) = function
+            | [] -> (yes, no)
+            | x::xs -> if (p x) then aux ((yes@[x]), no) xs
+                       else aux (yes, (no@[x])) xs
+        in aux ([], []) l    
+\end{minted}
+
+Definire la funzione \verb|pairwith|, che dato un elemento ed una lista restituisce una lista di coppie formate dall'elemento passato e l'elemento corrispondente della lista passata, utilizzando \verb|List.map|
+\begin{minted}{ocaml}
+    let pairwith x l = List.map (function y -> (x, y) ) l
+\end{minted}
+
+Definire la funzione \verb|setdiff| per la differenza insiemistica, utilizzando \verb|List.filter|:
+\begin{minted}{ocaml}
+    let rec isin l x = match l with
+        | [] -> true
+        | y::ys -> if (x = y) then false
+                   else isin ys x;;
+    let setdiff l1 l2 = List.filter (isin l2) l1
+\end{minted}
+In maniera più concisa, invece di utilizzare un'altra funzione \verb|isin| si può utilizzare la funzione \verb|exists| dal modulo List, che prende un predicato ad una lista e restituisce un booleano che rappresenta se esiste un elemento nella lista che verifica quel predicato. 
+\begin{minted}{ocaml}
+    let mem l x = List.exists ((=) x) l;;
+    let setdiff l1 l2 = List.filter (not (mem l2)) l1
+\end{minted}
+
+Un'altra soluzione possibile è la seguente:
+\begin{minted}{ocaml}
+    let rec setdiff l1 = function
+        | [] -> l1
+        | x::xs -> setdiff (List.filter (function y -> y <> x) l1) xs    
+\end{minted}
+
+\clearpage
+
+
+\end{document}

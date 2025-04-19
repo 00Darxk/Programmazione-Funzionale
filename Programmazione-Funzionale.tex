@@ -81,7 +81,7 @@ Università degli Studi ``Roma Tre"}}
 
 %% 2 esoneri uno aprile uno a maggio, orale 
 
-\section{PF01: Introduzione ad OCaml}
+\section{Introduzione ad OCaml}
 
 La programmazione funzionale è un paradigma di programmazione estremamente potente, utilizza un metodo completamente diverso dagli altri paradigmi di programmazione. L'idea di base consiste nel considerare un programma una funzione, è un linguaggio di alto livello dichiarativo. Il programmatore infatti specifica che cosa deve essere calcolato, non come deve essere calcolato, a differenza di linguaggi imperativi.  
 Il linguaggio di programmazione pià funzionale è Haskell, nel corso verrà usato il linguaggio Objective Caml, contiene aspetti di programmazione orientata agli oggetti. 
@@ -250,14 +250,14 @@ Per le coppie il costruttore è \verb|(,)|, l'insieme tra parentesi e virgola, a
 
 \clearpage
 
-\section{PF02: Ricorsione e Pattern}
+\section{Ricorsione e Pattern}
 
 \subsection{Definizioni Ricorsive}
 
 Nei linguaggi funzionali non esistono costrutti di controllo, ma il principale meccanismo di controllo è la ricorsione, realizzato tramite la parola chiave \verb|rec|. 
 In linguaggi funzionali ``puri'', non sono presenti costrutti di controllo per realizzare cicli. Per risolvere un problema ricorsivamente bisogna identificare i casi base, che possono essere risolti immediatamente. Inoltre bisogna identificare sotto-problemi più semplici di un generico problema complesso, che possono aiutare ad individuare la sua soluzione. Supponendo di poter risolvere questi problemi, l'ipotesi di lavoro, bisogna operare sulla soluzione di questi sotto-problemi per ottenere la soluzione del problema complesso. 
 
-\subsubsection*{Esempio: \texttt{split\_string}}
+\subsubsection{Esempio: \texttt{split\_string}}
 
 Si considera il problema di valutare un'espressione aritmetica rappresentata in una stringa. L'operazione è tra due interi non negativi, la funzione offerta come soluzione dovrebbe riportare il risultato di questa espressione. Le operazioni consentite sono la somma, differenza, prodotto e divisione intera. 
 Si avrà una funzione: \verb|evaluate: string -> int|. Applicata su una variabile $s$, di tipo stringa deve restituire il risultato dell'espressione rappresentata, o un errore se non rispetta le condizioni d'uso. 
@@ -289,7 +289,7 @@ Data una dichiarazione locale \verb|let x = E in F| in un ambiente $\mathscr{A}$
 Si possono usare dichiarazioni locali per evitare di dover calcolare più volte il valore di un'espressione, usata più volte. 
 Una funzione può essere dichiarata localmente se non ha un significato autonomo, all'esterno della funzione dove viene usata e se consente di diminuire il numero di parametri. 
 
-\subsubsection*{Esempio: \texttt{split\_string}}
+\subsubsection{Esempio: \texttt{split\_string}}
 
 Utilizzando dichiarazioni locali è possibile inserire in una sola funzione tute le funzioni ausiliarie definite precedentemente:
 \begin{minted}{ocaml}
@@ -338,7 +338,7 @@ Le eccezioni vengono propagate, se durante il calcolo del valore di un'espressio
 
 Un uso non elegante delle eccezioni consiste nell'usare un'eccezione sollevata in un costrutto \verb|try-with| per definire dei casi base per una funzione ricorsiva. In questo modo l'interruzione dell'esecuzione causata dall'eccezione restituisce il valore del caso base dal \verb|with|, mentre per gli altri casi non viene sollevata l'eccezione quindi l'esecuzione continua come se fosse stato implementato un caso base con un controllo. 
 
-\subsubsection*{Esempio: \texttt{split\_string}}
+\subsubsection{Esempio: \texttt{split\_string}}
 
 Utilizzando un'eccezione si può risolvere il problema proposto, definendo una nuova eccezione e sollevandola se l'operatore non corrisponde a nessuno degli operatori permessi:
 \begin{minted}{ocaml}
@@ -436,7 +436,7 @@ Si può utilizzare per definire funzioni esplicitando i parametri presi in argom
 \end{minted}
 Quando il pattern matching non è esaustivo OCaml individua il problema, ma è comunque interpreta l'espressione. Se non si riesce ad effettuare alcun un match viene sollevato un errore di tipo \verb|Match_failure|. 
 
-\subsubsection*{Esempio: \texttt{split\_string}}
+\subsubsection{Esempio: \texttt{split\_string}}
 
 Utilizzando il pattern matching si può semplificare in modo considerevole la precedente implementazione della funzione, rimuovendo i vari costrutti condizionali annidati con un solo costrutto match:
 \begin{minted}{ocaml}
@@ -452,7 +452,7 @@ Utilizzando il pattern matching si può semplificare in modo considerevole la pr
 
 \clearpage
 
-\section{PF03: Costrutti Imperativi e I/O}
+\section{Costrutti Imperativi e I/O}
 
 Su OCaml nel modulo Pervasives sono presenti delle funzioni per la stampa sullo standard output \verb|stdout|, \verb|print_string| e \verb|print_int| queste funzioni sono di tipo: 
 \begin{minted}[mathescape, escapeinside=||]{ocaml}
@@ -557,9 +557,8 @@ Se un problema $P_1$ può essere convertito in un altro problema $P_2$ in modo c
 
 \clearpage
 
-\section{PF04: Liste}
+\section{Liste}
 
-\subsection{Liste}
 
 %% TODO add caratteristica di OCaml di modificare variabili con costrutti presenti in OCaml, non significa che è lecito utilizzarli essendo un corso di programmazione funzionale
 
@@ -572,12 +571,29 @@ Si possono quindi realizzare liste in modo induttivo, data una lista vuota \verb
 In questo modo è possibile generare tutte le possibili liste per un dato tipo, per stadi, realizzando un albero radicato in \verb|[]|, ed ogni figlio rappresenta l'aggiunta di un elemento del tipo tramite \verb|x::xs|, dove \verb|xs| è la lista corrispondente al nodo padre. 
 %% TODO add img albero generatore liste per tipo
 
-I selettori di una lista sono \verb|List.hd: 'a list| $\rightarrow$ \verb|'a|, \textit{head}, che restituisce il primo elemento e \verb|List.tl: 'a list| $\rightarrow$ \verb|'a list|, \textit{tail}, restituisce la lista corrispondente senza il primo elemento. Non sono definiti sulla lista vuota \verb|[]|, quindi applicati su di essa viene sollevata un'eccezione.  
-
 Le liste possono essere costruite ricorsivamente partendo da una lista vuota \verb|[]|, supponendo di poter calcolare il valore su una lista \verb|xs|, si determina come calcolare il valore della generica lista \verb|x::xs|. 
 
+Nel modulo List sono definite funzioni che operano sulle liste, alcune di queste sono:
+\begin{itemize}
+    \item \verb|List.hd: 'a list| $\rightarrow$ \verb|'a|
+    \item \verb|List.tl: 'a list| $\rightarrow$ \verb|'a list|
+    \item \verb|List.length: 'a list| $\rightarrow$ \verb|int|
+    \item \verb|List.flatten: 'a list list| $\rightarrow$ \verb|'a list|
+    \item \verb|List.sort: ('a| $\rightarrow$ \verb|'a| $\rightarrow$ \verb|int)| $\rightarrow$ \verb|'a list| $\rightarrow$ \verb|'a list|
+    \item \verb|List.assoc: 'a| $\rightarrow$ \verb|('a * 'b) list| $\rightarrow$ \verb|'b|
+    \item \verb|List.rev: 'a list| $\rightarrow$ \verb|'a list|
+    \item \verb|List.mem: 'a| $\rightarrow$ \verb|'a list| $\rightarrow$ \verb|bool|
+    \item \verb|List.split: ('a * 'b) list| $\rightarrow$ \verb|'a list * 'b list|
+    \item \verb|List.combine: 'a list| $\rightarrow$ \verb|'b list| $\rightarrow$ \verb|('a * 'b) list|
+    \item \verb|List.sort: ('a| $\rightarrow$ \verb|'a| $\rightarrow$ \verb|int)| $\rightarrow$ \verb|'a list| $\rightarrow$ \verb|'a list|
+    \item \verb|List.merge: ('a| $\rightarrow$ \verb|'a| $\rightarrow$ \verb|int)| $\rightarrow$ \verb|'a list| $\rightarrow$ \verb|'a list| $\rightarrow$ \verb|'a list|
+\end{itemize}
+Le funzioni \textit{head} \verb|hd| e \textit{tail} \verb|tl| sono i selettori di una lista, il primo restituisce il primo elemento ed il secondo restituisce la lista corrispondente senza il primo elemento. Non sono definiti sulla lista vuota \verb|[]|, quindi applicati su di essa viene sollevata un'eccezione.  
 
-Si vuole determinare una funzione che determina il numero degli elementi in una lista \verb|length:| \verb|'a list| $\rightarrow$ \verb|int|. Per implementarla ricorsivamente si considera una lista vuota di lunghezza 0; mentre per un caso generico, la sua lunghezza è $1+n$, dove $n$ è la lunghezza della lista rimosso il primo elemento, si suppone si possa calcolare questo valore $n$. 
+\verb|length| restituisce un intero che rappresenta il numero di elementi nella lista. \verb|flatten| trasforma una lista di liste in un'unica grande lista, se gli elementi delle liste contenute nella lista interna non coincidono produce un errore. La funzione \verb|sort| ordina una lista, in base ad una relazione d'ordine espressa come funzione fornita come argomento della funzione. Questa funzione di ordinamento deve essere di tipo \verb|('a| $\rightarrow$ \verb|'a| $\rightarrow$ \verb|int)|, e deve restituire 1 se il primo elemento è maggiore del secondo, 0 se sono uguali, oppure -1 se il primo elemento è minore, secondo una certa relazione d'ordine. 
+
+
+Si vuole implementare la funzione \verb|length|, senza utilizzare il modulo List. Per implementarla ricorsivamente si considera una lista vuota di lunghezza 0; mentre per un caso generico, la sua lunghezza è $1+n$, dove $n$ è la lunghezza della lista rimosso il primo elemento, si suppone si possa calcolare questo valore $n$. 
 La definizione è valida poiché ripetendo l'operazione di coda si arriverà necessariamente alla lista vuota \verb|[]|, la funzione è quindi definita utilizzando il selettore di coda:
 \begin{minted}{ocaml}
     let rec length l = 
@@ -588,12 +604,36 @@ Alternativamente si può utilizzare il pattern matching sulla lista:
 \begin{minted}{ocaml}
     let rec length = function
           [] -> 0
-        | x::xs -> 1 + (length xs)
+        | _::xs -> 1 + (length xs)
 \end{minted}
 In un pattern possono occorrere solo variabili o costruttori, \verb|[]| e \verb|::|. Utilizzando questi due costruttori si può individuare il caso base di una lista vuota \verb|[]| ed il caso con una lista avente almeno un elemento \verb|x::xs|, dove a \verb|x| viene assegnato il valore del primo elemento della lista, ed a \verb|xs| viene assegnato il valore della lista rimanente. 
 Questa modalità è un'alternativa all'uso dei selettori di testa e di coda per le liste. Analogamente si può effettuare pattern matching per un certo numero di elementi specifico in una lista con \verb|[x1;...x;n]|, questo pattern avrà successo solo se la lista su cui si vuole effettuare il match ha esattamente $n$ elementi ed il valore di tutti i componenti \verb|xi| assumerà il valore corrispondente dell'elemento $i-$esimo della lista. Oppure si può realizzare con \verb|x1::...::xn::xs|, dove \verb|xs| conterrà la lista vuota \verb|[]| se la lista su cui si è effettuato il match ha esattamente $n$ elementi, altrimenti sarà composta dalla coda della lista. 
 
-\subsubsection*{Esempio: \texttt{super}}
+Per realizzare la funzione \verb|length| ricorsivamente si considera la seguente implementazione:
+\begin{minted}{ocaml}
+    let length' l =
+        let rec aux acc = function
+            | [] -> acc
+            | _::xs -> aux (1 + acc) xs
+        in aux 0 l    
+\end{minted}
+
+Un'altra funzione simile che si può implementare calcola il prodotto di tutti gli interi di una lista \verb|prodof: int| $\rightarrow$ \verb|int|. Si realizza sia in modo ricorsivo che iterativo:
+\begin{minted}{ocaml}
+    let rec prodof = function
+        | [] -> 1
+        | x::xs -> x * (prodof xs)
+    ;;
+    let prodof' l = 
+        let rec aux acc = function
+            | [] -> acc
+            | x::xs -> aux (x * acc) xs
+        in aux 1 l
+    ;;
+\end{minted}
+
+
+\subsection{Esempio: \texttt{super}}
 
 Si vuole creare una funzione che, date le ultime $n$ estrazioni del superenalotto, restituisca i numeri che sono stati estratti meno volte. Questa funzione \verb|super| prende come parametro la lista di liste \verb|est|, rappresentanti le ultime estrazioni, il numero di interi di ogni estrazione $n$ ed il massimo numero che può essere estratto $h$:
 \begin{minted}[mathescape, escapeinside=||]{ocaml}
@@ -607,6 +647,16 @@ Per determinare questi numeri, si definisce la funzione \verb|upto: int| $\right
         if i > j then []
         else i::(upto (i + 1) j)    
 \end{minted}
+Si può realizzare in modo ricorsivo come il seguente:
+\begin{minted}{ocaml}
+    let upto' i j =
+        let rec aux acc i' j' =
+            if i' > j' then acc
+            else aux (j'::acc) i' (j' - 1)
+        in aux [] i j
+\end{minted}
+L'ultima riga potrebbe essere scritta come \verb|else aux| \verb|(m'::acc)| \verb|(m'+1) n'|, ma in questo modo si inverte l'ordine della lista creata. Nelle due versioni si aggiunge sempre in testa, partendo dall'estremo inferiore nel primo caso e dall'estremo superiore nel secondo caso. 
+
 
 Per poter utilizzare facilmente la lista delle estrazioni, bisogna appiattirla, da una lista di liste ad una lista, quindi bisogna definire una funzione \verb|flatten:| \verb|'a list list| $\rightarrow$ \verb|'a list|:
 \begin{minted}{ocaml}
@@ -614,13 +664,29 @@ Per poter utilizzare facilmente la lista delle estrazioni, bisogna appiattirla, 
           [] -> []
         | x::xs -> x@(flatten xs)
 \end{minted}
-
+La funzione \verb|flatten| in maniera ricorsiva ha la seguente implementazione:
+\begin{minted}{ocaml}
+    let rec flatten ll 
+        let aux acc = function 
+              [] -> acc
+            | x::xs -> flatten (acc@x) xs 
+        in aux [] ll
+\end{minted}
 Si definisce quindi una funzione per contare quante volte uno solo dei numeri possibili è stato estratto, che verrà applicata su tutti i possibili numeri, \verb|conta:| \verb|'a| $\rightarrow$ \verb|'a list| $\rightarrow$ \verb|int|:
 \begin{minted}{ocaml}
     let rec conta x = function
           [] -> 0
-        | y::ys -> if x = y then 1 + (conta x ys)
+        | y::ys -> if y = x then 1 + (conta x ys)
                    else conta x ys
+\end{minted}
+In forma iterativa diventa:
+\begin{minted}{ocaml}
+    let conta x l =
+        let rec aux x' l' acc = match l with
+                  [] -> acc
+                | y::ys -> if y = x' then aux x' ys (acc + 1)
+                           else aux x' ys acc
+        in aux x l 0
 \end{minted}
 
 Si definisce ora una funzione per contare tutti questi possibili numeri, \verb|contatutti:| \verb|'a list| $\rightarrow$ \verb|'a list| $\rightarrow$ \verb|('a * int) list|. Il primo argomento $l_1$ è la lista contenente i possibili numeri, mentre il secondo $l_2$ è la lista contenente tutte le estrazioni. 
@@ -656,6 +722,39 @@ Ottenuta la lista ordinata, per ottenere una lista dei numeri meno estratti, bis
         | x::xs -> if n <= 0 then []
                    else x::(take (n - 1) xs)
 \end{minted}
+Per realizzarla in modo ricorsivo, non si può utilizzare l'operatore cons, altrimenti ad ogni passaggio si aggiungerebbe la testa della lista all'accumulatore, invertendo l'ordine \verb|x::acc|. Questo avviene perché in un approccio iterativo si effettuano tutte le operazioni in un passo prima di effettuare la ricorsione, quindi viene aggiunta subito l'elemento all'accumulatore, prima di passarlo all'iterazione successiva Quindi per mantenere l'ordine bisogna effettuare una concatenazione:
+\begin{minted}{ocaml}
+    let take' n l = 
+        let aux acc n' = function
+              [] -> acc
+            | x::xs if n' > 0 then aux (acc@[x]) (n' - 1) xs
+                    else acc 
+        in aux [] n l
+\end{minted}
+Ma la concatenazione è un'operazione molto costosa, quindi sarebbe meglio creare una lista inversa e poi invertirla alla fine. Si considera quindi una funzione \verb|rev: 'a list| $\rightarrow$ \verb|'a list| che inverte l'ordine di una lista:
+\begin{minted}{ocaml}
+    let rec rev = function
+        | [] -> []
+        | x::xs -> (rev xs)@[x]    
+\end{minted}
+Ma in modo ricorsivo utilizza comunque la concatenazione costosa, quindi si utilizza un'implementazione iterativa:
+\begin{minted}{ocaml}
+    let rev l =
+        let rec aux acc = function
+            | [] -> acc
+            | x::xs -> aux (x::acc) xs
+        in aux [] l
+\end{minted}
+Una funzione di inversione è comunque presente nel modulo List di OCaml, quindi si può utilizzare invece di definire una nuova funzione. L'approccio ricorsivo per la funzione \verb|take| è quindi:
+\begin{minted}{ocaml}
+    let take'' n l = 
+        let rec aux acc n' = function
+            | [] -> acc
+            | x::xs -> if n' > 0 then aux (x::acc) (n' - 1) xs
+                       else acc 
+        in List.rev (aux [] n l)
+\end{minted}
+
 A questo punto non è più di interesse il numero di occorrenze, quindi si definisce una funzione \verb|primi:| \verb|('a * 'b) list| $\rightarrow$ \verb|'a list|, per restituire una lista contenete solo il primo elemento delle coppie:
 \begin{minted}{ocaml}
     let rec primi = function
@@ -668,111 +767,11 @@ Si può quindi definire la funzione \verb|super| come:
     let super est n h = primi (take n (sort (contatutti (upto 1 h) (flatten est))))    
 \end{minted}
 
+\subsection{Esempio: \texttt{merge sort}}
 
-%% TODO fix this 15/30 PF04 ppt
-%% upto: upto m n = [m, m+1, ..., n]
-\begin{minted}{ocaml}
-    let rec upto m n = 
-        if m > n then []
-        else m::(upto (m + 1) n)
-\end{minted}
-% versione ricorsiva: 
-\begin{minted}{ocaml}
-    let upto' m n =
-        let rec aux l m' n' =
-            if m > n then l
-            else aux (n'::l) m' (n' - 1)
-        in aux [] m n
-\end{minted}
-L'ultima riga potrebbe essere scritta come \verb|else aux (m'::l) (m'+1) n'|, ma in questo modo si inverte l'ordine della lista creata. Nelle due versioni si aggiunge sempre in testa, partendo dall'estremo superiore nel primo caso e dall'estremo inferiore nel secondo caso. 
-
-
-\begin{minted}{ocaml}
-    let rec take n l = match l with
-          [] -> []
-        | x::xs -> if n > 0 then x::(take (n - 1) xs)
-                   else []
-    
-    let take' n l = 
-        let aux acc n' l' = match l with
-              [] -> acc
-            | x::xs if n' > 0 then aux (acc@[x]) (n' - 1) xs
-                    else acc 
-        in aux [] n l
-\end{minted}
-
-
-
-\begin{minted}{ocaml}
-    let rev l =
-        let rec aux acc = function
-              [] -> acc
-            | x::xs -> aux (x::acc) xs
-        in aux [] l
-\end{minted}
-
-
-La funzione \verb|flatten| appiattisce una lista di liste:
-\begin{minted}{ocaml}
-    let rec flatten ll 
-        let aux acc = function 
-              [] -> acc
-            | x::xs -> flatten (acc@x) xs 
-        in aux [] ll
-\end{minted}
-
-La funzione \verb|conta| determina le occorrenze di un elemento in una lista:
-\begin{minted}{ocaml}
-    let rec conta v = function
-          [] -> 0
-        | x::xs -> if x = v then 1 + (conta v xs)
-                   else conta v xs
-\end{minted}
-In forma iterativa diventa:
-\begin{minted}{ocaml}
-    let conta v l =
-        let rec aux t l' a =
-            match l with
-                  [] -> a
-                | x::xs -> if x = t then aux t xs (a + 1)
-                           else aux t xs acc
-        in aux v l 0
-\end{minted}
-La funzione \verb|contatutti|: \verb|'a list -> 'a list -> ('a * int) list| conta tutte le occorrenze di ogni elemento nella lista \verb|flatten|:
-\begin{minted}{ocaml}
-    let rec contatutti e l =
-        match e with
-              [] -> []
-            | x::xs -> (x, (conta x l))::(contatutti xs l)
-\end{minted}
-Per ordinarle in ordine crescente in cui sono state estratte, bisogna determinare una funzione di ordinamento per la funzione \verb|sort| del modulo \verb|List| che permette di restituire una lista di coppie in output, come in input. Si definisce una funzione ausiliaria \verb|comp|:
-\begin{minted}{ocaml}
-    let comp (v1, n1) = function
-        (_, n) -> if n1 < n then -1
-                  else if n1 = n then 0
-                  else 1
-\end{minted}
-Questa funzione permette di comparare due coppie, quindi si può usare per ordinare una lista formata da coppie:
-\begin{minted}{ocaml}
-    let sort l = 
-        List.sort comp l
-\end{minted}
-
-
-%% ??
-\begin{minted}{ocaml}
-    let rec primi = function
-          [] -> []
-        | x::xs -> (fst x)::(primi xs)
-\end{minted}
-
-\begin{minted}{ocaml}
-    let super estrazioni dim higher =
-        print(' (take' dim (sort (contatuttti (upto 1 higher) (flatten0 estrazioni)))))
-\end{minted}
-
-\subsubsection*{Esempio: \texttt{merge sort}}
-
+Il merge sort è un algoritmo di ordinamento che applica la tecnica del \textit{divide et impera}, consiste nel dividere un dato insieme da ordinare ricorsivamente ed ordinare i sottoinsiemi con lo stesso algoritmo di merge sort. Le due parti vengono divise in modo al più uguale. 
+Per implementare il merge sort, bisogna definire una funzione che divida una lista in due metà, al massimo differenti di un elemento per lunghezza. 
+Si vuole quindi definire la funzione \verb|split:| \verb|'a list| $\rightarrow$ \verb|'a list * 'a list|:
 \begin{minted}{ocaml}
     let rec split = function
           [] -> ([], [])
@@ -780,73 +779,142 @@ Questa funzione permette di comparare due coppie, quindi si può usare per ordin
         | x::y::rest -> let (xs, ys) = split rest
                         in (x::xs, y::ys)
 \end{minted}
-Le due parti della lista devono avere la stessa lunghezza, o al massimo variare di uno, ci sono due casi base, se la lista è vuota o ha un sollo elemento. Se si hanno almeno due elementi si spacca a metà la lista, togliendo i primi due elementi \verb|x| e \verb|y| e si mettono in testa allo divisione successiva \verb|xs| \verb|ys|. 
-Si può realizzare in modo più succinto, considerando solo due casi, una lista vuota o non vuota:
+Le due parti della lista devono avere la stessa lunghezza, o al massimo variare di uno, ci sono due casi base, se la lista è vuota o ha un solo elemento. Se si hanno almeno due elementi si spacca a metà la lista, togliendo i primi due elementi \verb|x| e \verb|y| e si mettono in testa allo divisione successiva \verb|xs| \verb|ys|. 
+Si può realizzare in modo più succinto, considerando solo due casi, una lista vuota o non vuota, e si alterna a quale lista viene aggiunto l'elemento successivo:
 \begin{minted}{ocaml}
     let rec split = function
         | [] -> ([], [])
-        | x..xs -> let (as, bs) = split xs
-                    in (x::bs, as)
+        | x::xs -> let (ys, zs) = split xs
+                    in (x::zs, ys)
 \end{minted}
-
-%% FUNZIONE MERGESORT
+Per implementare l'algoritmo di merge sort, bisogna prima implementare la funzione merge, questa funzione deve unire due liste e mantenere il loro ordinamento. Si realizza la funzione \verb|merge:| \verb|'a list| $\rightarrow$ \verb|'a list| $\rightarrow$ \verb|'a list|, considerando un ordinamento non decrescente:
+\begin{minted}{ocaml}
+    let rec merge l1 l2 = match (l1, l2) with
+        | ([], l) | (l, []) -> l
+        | (x::xs, y::ys) -> if x < y then x::(merge xs (y::ys))
+                            else y::(merge (x::xs) ys)
+\end{minted}
+L'algoritmo di merge sort quindi si implementa semplicemente come:
 \begin{minted}{ocaml}
     let rec mergesort = function
-          [] -> []
+        |  [] -> []
         | [x] -> [x]
         | l -> let (l1, l2) = split l
                in merge (mergesort l1) (mergesort l2)
 \end{minted}
-Nel modulo list sono definite le funzioni head \verb|hd|, tail \verb|tl| già descritte in precedenza, \verb|length|, \verb|flatten| che trasforma una lista di liste in un'unica grande lista, la funzione \verb|sort| che ordina una lista, secondo un qualsiasi ordine definito da una funzione fornita come argomento. 
 
 \clearpage
 
-\section{PF05: Collezioni e Backtracking}
+\section{Collezioni e Backtracking}
 
+
+Un tipo astratto di dato è costituito da un insieme di oggetti ed un insieme di operazioni che operano su questi oggetti. 
+Per rappresentare un tipo astratto di dato bisogna almeno riferirsi ad un tipo di dato concreto. Quindi per rappresentare un tipo astratto di dato \verb|A|, bisogna determinare un tipo concreto \verb|T|, tale che ogni oggetto del tipo astratto di dato abbia almeno un rappresentante in \verb|T|, ed elementi distinti del tipo \verb|A| abbiano rappresentanti distinti in \verb|T|. 
+Bisogna implementare ogni operazione $F$ su \verb|A| con un'operazione $P$ su \verb|T|, in modo da conservare le operazioni. Ovvero se $v_i$ sono valori di \verb|T|, che rappresentano valori $a_i$ di \verb|A|, allora $P(a_1,\cdots,a_n)$ è un rappresentante di $F(v_1,\cdots,v_n)$. 
+Quindi invece di operare direttamente oggetti di \verb|A| si può operare sui loro rappresentanti in \verb|T| ed in seguito si può determinare il corrispettivo in \verb|A|. 
+
+Siano $\mathscr{A}=(A,f_1\cdots,f_n)$ e $\mathscr{B}=(B,g_1,\cdots,g_n)$ due strutture algebriche dello stesso tipo, con ogni funzione $f_i$ e $g_i$ che prendano lo stesso numero di argomenti. Una rappresentazione di $\mathscr{A}$, tipo astratto, in $\mathscr{B}$, tipo concreto, è un'applicazione, funzione parziale: $\varphi:\mathscr{B}\to\mathscr{A}$, tale che è suriettiva: $\forall a\in A \,\exists b\in B\implies \varphi(b)=a$; ed è un omomorfismo: $\forall b_k\in B\implies\varphi(g_i(b_1,\cdots,b_n))=f_i(a_1,\cdots,a_n)$. 
+%% TODO add img par 5.1.2 libro 9/16 PF05.pdf
 
 \subsection{Dizionari}
 
-Un tipo di dato interessante sono il tipo di dato dizionario, una collezione di elementi ciascuno costituito da una coppia chiave-valore. Ogni elemento ha chiave distinta. 
-Su questa collezione si può cercare un elemento per chiave, inserire una coppia di elementi, e cancellare un elemento. 
-%% TODO ??
+Un tipo di astratto dato interessante sono dizionario, una collezione di elementi ciascuno costituito da una coppia chiave-valore. Ogni elemento ha chiave distinta. 
+Su questa collezione si può cercare un elemento per chiave, inserire una coppia di elementi, e cancellare un elemento, data la chiave. Si possono implementare in OCaml tramite liste associative. 
+
+Una lista associativa è una lista di coppie, del tipo \verb|('a * 'b) list|, sulle chiave deve esistere una relazione di uguaglianza. Quindi deve utilizzare un tipo che permette l'uguaglianza. 
+
+Data una lista associativa che implementa un dizionario, si vuole realizzare una funzione \verb|assoc: 'a| $\rightarrow$ \verb|('a * 'b) list| $\rightarrow$ \verb|'b|, che data una chiave $k$ ed una lista associativa $l$, restituisce, se esiste, il valore $v$ corrispondente della chiave $k$ nel dizionario $l$. Se non viene trovato l'elemento bisogna sollevare un'eccezione, dato che non può restituire alcun valore:
 \begin{minted}{ocaml}
+    exception NotFound;;
     let rec assoc k = function
-          [] -> raise NotFound
-        | (k1, v)::rest -> if k = k1 then v
+        | [] -> raise NotFound
+        | (k', v)::rest -> if k = k' then v
                            else assoc k rest
 \end{minted}
 Questa dichiarazione non è corretta poiché nell'istruzione dichiarativa il tipo del costrutto \verb|then| è il tipo di \verb|v|, mentre nell'\verb|else| il tipo restituito è una funzione e non coincide ad un valore. 
-Per inserire un valore in un dizionario, bisogna prima eliminare la vecchia coppia che occupava quella chiave. Essendo troppo costoso per inserire una nuova coppia questa viene inserita in testa al dizionario, mente le vecchie coppie obsolete si trovano dopo questa nuova coppia. 
+Nel modulo List è presenta una funzione \verb|List.assoc| che effettua la stessa operazione, e solleva un'eccezione \verb|Not_found| se non trova una chiave corrispondente. 
+Per inserire un valore in un dizionario, bisogna prima eliminare la vecchia coppia che occupava quella chiave. Essendo troppo costoso per inserire una nuova coppia questa viene inserita in testa al dizionario, mente le vecchie coppie obsolete si trovano dopo questa nuova coppia. Quindi l'inserimento di una coppia chiave-valore $k$-$v$, viene quindi realizzato da una funzione \verb|inserisci 'a| $\rightarrow$ \verb|'b| $\rightarrow$ \verb|('a * 'b) list| $\rightarrow$ \verb|('a * 'b) list|,
+che inserisce il nuovo elemento in testa, in modo che venga scelto prima nella ricerca, e quindi ``sovrascrive'' il valore successivo diventato obsoleto:
+\begin{minted}{ocaml}
+    let inserisci k v l = (k, v)::l    
+\end{minted}
+Per cancellare una coppia chiave-valore dato che potrebbero essere presenti più coppie con la stessa chiave per l'implementazione precedente, bisogna eliminare tutte le coppie chiave-valore presenti nella lista, che coincidono alla chiave $k$ fornita come argomento alla funzione \verb|cancella: 'a| $\rightarrow$ \verb|('a * 'b) list| $\rightarrow$ \verb|('a * 'b) list|:
 \begin{minted}{ocaml}
     let rec cancella k = function
           [] -> []
         | (k', v)::rest -> if k = k' then cancella k rest
-                           else  (k', v)::cancella k rest
+                           else  (k', v)::(cancella k rest)
 \end{minted}
-
-
-%% TODO
-
-Rappresentare un tipo astratto di dato è costituito da un insieme di oggetti ed un insieme di operazioni su tali oggetti.  %% TODO
-
 
 \subsection{Insiemi}
 
-Negli insiemi tramite liste bisogna definire le loro operazioni. Si considera una possibile implementazione della differenza tra due insiemi:
+Un insieme finito è un tipo astratto di dato capace di contenere elementi, in questa implementazione dello stesso tipo, univoci all'interno dell'insieme. Ovvero in un'istanza di questo tipo astratto di dato può essere presente un unico elemento sulla base di una certa relazione di uguaglianza. 
+Per gli insiemi sono definite le operazioni di ricerca $\in$, di unione $\cup$, intersezione $\cap$ e sottrazione tra insiemi $\setminus$. Il tipo concreto è una lista $l$ che contiene esattamente gli elementi dell'insieme. Ogni lista di tipo \verb|'a list| rappresenta un unico insieme. Si devono definire le quattro operazioni descritte sul tipo astratto:
+\begin{itemize}
+    \item \verb|mem: 'a| $\rightarrow$ \verb|'a list| $\rightarrow$ \verb|bool|: è un predicato che restituisce se un elemento $x$ appartiene ad un insieme $S$, $x\in S$
+    \item \verb|union: 'a list| $\rightarrow$ \verb|'a list| $\rightarrow$ \verb|'a list|: applicata a due liste $l_1$ ed $l_2$ che rappresentano due insiemi $S_1$ e $S_2$ restituisce una rappresentazione di $S_1\cup S_2$
+    \item \verb|intersect: 'a list| $\rightarrow$ \verb|'a list| $\rightarrow$ \verb|'a list|: applicata a due liste $l_1$ ed $l_2$ che rappresentano due insiemi $S_1$ e $S_2$ restituisce una rappresentazione di $S_1\cap S_2$
+    \item \verb|setdiff: 'a list| $\rightarrow$ \verb|'a list| $\rightarrow$ \verb|'a list|: applicata a due liste $l_1$ ed $l_2$ che rappresentano due insiemi $S_1$ e $S_2$ restituisce una rappresentazione di $S_1\setminus S_2$
+\end{itemize}
+Anche se una lista contenete ripetizioni è una rappresentazione contenente una sola istanza di quell'elemento, per evitare di creare liste eccessivamente lunghe si impone che le liste rappresentazioni di insiemi non abbiano ripetizioni. 
+
+Per implementare la ricerca, bisogna semplicemente iterare sulla lista e controllare se l'elemento corrente coincide a l'elemento $x$ su cui viene applicata la funzione \verb|mem|:
 \begin{minted}{ocaml}
-    let rec setdiff l l' = function 
-          [] -> 
-        | x::xs -> if mem x l' then setdiff xs l'
-                   else x::(setdiff xs l')
+    let rec mem x = function
+        | [] -> false
+        | y::ys -> y = x || (mem x ys)
+\end{minted}
+
+La funzione di unione potrebbe semplicemente concatenare le due liste rappresentazioni, ma si vuole imporre la condizione che non possono esserci elementi ripetuti su di una stessa lista rappresentazione, quindi bisogna controllare la presenza prima di aggiungere un altro elemento:
+\begin{minted}{ocaml}
+    let rec union l = function
+        | [] -> l
+        | x::xs -> if mem x l then union l xs
+                   else x::(union l xs)    
+\end{minted}
+In modo iterativo invece:
+\begin{minted}{ocaml}
+    let union' l1 l2 = 
+        let rec aux l' = function
+            | [] -> l'
+            | x::xs -> if mem x l' then union l' xs
+                       else union (x::l') xs
+        in aux l1 l2
+\end{minted}
+Poiché il caso base restituisce la prima lista, ed essenzialmente bisogna aggiungere ad ogni iterazione un elemento alla prima lista, o seconda in base all'implementazione, essenzialmente rappresenta un accumulatore, quindi non è necessario utilizzarne uno. 
+
+Per la funzione intersezione invece questo non può essere effettuato, per la sua versione iterativa; la funzione è essenzialmente la stessa, ma bisogna aggiungere un elemento solo se è presente in entrambe le liste:
+\begin{minted}{ocaml}
+    let rec intersect l = function
+        | [] -> []
+        | x::xs -> if mem x l then x::(intersect l xs)
+                   else intersect l xs
+\end{minted}
+Un algoritmo iterativo, invece necessita di un accumulatore:
+\begin{minted}{ocaml}
+    let intersect' l1 l2 = 
+        let rec aux acc l' = function
+            | [] -> acc 
+            | x::xs -> if mem x l' then aux (x::acc) l' xs
+                       else aux acc l' xs
+        in aux [] l1 l2    
+\end{minted}
+
+Si considera una possibile implementazione della differenza tra due insiemi:
+\begin{minted}{ocaml}
+    let rec setdiff l1 l2 = match l1 with 
+        | [] -> []
+        | x::xs -> if mem x l2 then setdiff xs l2
+                   else x::(setdiff xs l2)
 \end{minted}
 In maniera iterativa:
 \begin{minted}{ocaml}
-    let setdiff' l l' = 
-        let rec aux acc l l' = match l with
-              [] -> []
-            | x::xs -> if mem x l' then aux acc xs l'
-                       else aux(x::acc l l')
-        in aux [] l l'
+    let setdiff' l1 l2 =
+        let rec aux acc l1' l2' = match l1' with
+            | [] -> acc
+            | x::xs -> if mem x l2' then aux acc xs l2'
+                       else aux (x::acc) xs l2'
+        in aux [] l1 l2
 \end{minted}
 
 \subsection{Backtracking}
@@ -856,22 +924,29 @@ Il \textit{backtracking} è una delle tecniche più importanti nella progettazio
 I candidati ad essere soluzioni sono una sequenza di elementi $x_i$ appartenenti all'insieme delle possibili soluzioni $S$. L'approccio di ``forza bruta'' considera tutte le possibili combinazioni; l'algoritmo di backtracing costruisce una sequenza $x_1,\cdots,x_i$, scegliendo ad ogni passo un nuovo elemento $x_{i+1}$ da aggiungere alla sequenza, ed analizza se questa sequenza ha possibilità di successo. Se è una soluzione mantiene la sequenza, altrimenti sceglie un altro elemento $x_{i+1}$ da aggiungere alla sequenza. 
 Una condizione principale è di non poter tornare indietro per elementi già visitati, e presenti nella sequenza. Questa condizione dipende dal problema su cui viene utilizzato l'algoritmo. 
 
+\subsubsection{Somma di Sottoinsiemi}
 
-Un problema tipico dell'informatica è la somma di sottoinsiemi. dato un insieme di interi positivi $S$ ed un intero $n$, determinare un sottoinsieme di $S$: $Y\subseteq S$, tale che la somma degli elementi di $Y$ sia uguale al valore dell'intero $n$. 
+Un problema tipico dell'informatica è la somma di sottoinsiemi: dato un insieme di interi positivi $S$ ed un intero $n$, determinare un sottoinsieme $Y$ di $S$: $Y\subseteq S$, tale che la somma degli elementi di $Y$ sia uguale al valore dell'intero $n$. 
 
-Si risolve mediante il backtracking, considerando come lo spazio di ricerca delle soluzioni un albero di tutti i possibili sottoinsiemi di $S$, che rispettano la condizione della somma. Le foglie quindi possono essere delle soluzioni valide oppure sottoinsiemi non validi, quindi non è serve espanderli ulteriormente. Una volta esplorato un sotto-albero viene rimossa la sua radice e si continua la ricerca. 
+Si risolve mediante il backtracking, considerando come lo spazio di ricerca delle soluzioni un albero di tutti i possibili sottoinsiemi di $S$, che rispettano la condizione della somma. Le foglie quindi possono essere delle soluzioni valide oppure sottoinsiemi non validi, ed in caso non è necessario espanderli ulteriormente. Una volta esplorato un sotto-albero viene rimossa la sua radice e si continua la ricerca. 
 %% TODO img albero sottoinsiemi ppt
 
 
 Ad ogni stadio della ricerca si considerano due insiemi degli elementi visitati o da visitare, $\hat{S}$ e $\hat{\bar{S}}$, uno complementare dell'altro. All'inizio si ha che $\hat{S}=\emptyset$ è lo spazio di ricerca delle soluzioni e $\hat{\bar{S}}=S$. 
-Se la somma degli elementi di $\hat{S}$ è maggiore di $n$ si ha una soluzione non valida, e si scarta l'ultimo elemento aggiunto, se è uguale ad $n$ si ha identificato una soluzione. Se la somma è minore invece ed $\hat{\bar{S}}=\emptyset$ allora non è una soluzione valida, se non è vuoto allora si sceglie un elemento $x\in\hat{\bar{S}}$, e si cerca una soluzione aggiungendo $x$ alla soluzione $\hat{S}$ con $\hat{S}\cup\{x\}$ e $\hat{\bar{S}}\setminus\{x\}$ oppure senza aggiungerlo alla soluzione con $\hat{S}$ e $\hat{\bar{S}\setminus\{x\}}$ 
+Se la somma degli elementi di $\hat{S}$ è maggiore di $n$ si ha una soluzione non valida, e si scarta l'ultimo elemento aggiunto, se è uguale ad $n$ si ha identificato una soluzione. Se la somma è minore invece ed $\hat{\bar{S}}=\emptyset$ allora non è una soluzione valida, se non è vuoto allora si sceglie un elemento $x\in\hat{\bar{S}}$, e si cerca una soluzione aggiungendo $x$ alla soluzione $\hat{S}$ con $\hat{S}\cup\{x\}$ e $\hat{\bar{S}}\setminus\{x\}$ oppure senza aggiungerlo alla soluzione con $\hat{S}$ e $\hat{\bar{S}}\setminus\{x\}$.  
 
-Per implementare un algoritmo risolutivo di questo problema si considera una funzione ausiliaria \verb|sum'| che somma tutti gli elementi di una lista:
+Per implementare un algoritmo risolutivo di questo problema si considera una funzione ausiliaria \verb|sum| che somma tutti gli elementi di una lista:
+\begin{minted}{ocaml}
+    let rec sum = function
+        | [] -> 0
+        | x::xs -> x + (sum xs)    
+\end{minted}
+In modalità iterativa:
 \begin{minted}{ocaml}
     let sum' l =
         let rec aux tot = function
               [] -> tot
-            | x::xs -> aux(tot+x) xs
+            | x::xs -> aux (tot + x) xs
         in aux 0 l
 \end{minted}
 
@@ -881,37 +956,36 @@ Si definisce un'eccezione \verb|NotFound| in caso la soluzione individuata non r
 \end{minted}
 Si implementa ora l'algoritmo:
 \begin{minted}{ocaml}
-    let search_subset set tot = 
-        let rec search_aux solution others tot' =
-            let s = sum' solution
-            in if s= tot' then solution
-               else if s > tot' then raise NotFound
-               else match others with
-                     [] -> raise NotFound
-                   | x::xs -> try search_aux (x::solution) xs tot
-                              with NotFound -> search_aux solution xs tot
-        in search_aux [] set tot
+    let search_subset set n = 
+        let rec search_aux sol others =
+            let s = sum' sol
+            in if s = n then sol
+               else if s > n then raise NotFound
+                    else match others with
+                        | [] -> raise NotFound
+                        | x::xs -> try search_aux (x::sol) xs
+                                   with NotFound -> search_aux sol xs
+        in search_aux [] set
 \end{minted}
-
-%% TEST search_subset [5;4;6;8;3;53;7;0;24;9] 15
-
-
 Per creare una versione generale che restituisce tutte le possibili soluzioni, si creano delle funzioni ausiliarie:
 \begin{minted}{ocaml}
     let rec mapcons a = function
-          [] -> []
-        | l::ls -> (a::l) :: (mapcons a ls)
+        | [] -> []
+        | l::ls -> (a::l)::(mapcons a ls)
 \end{minted}
+Questa funzione data una lista di liste, aggiunge in testa a tutte le liste contenute l'argomento $\alpha$ su cui viene applicata. 
+
 
 In questo modo si può definire la funzione \verb|search_all| che cerca tutte le possibili soluzioni:
 \begin{minted}{ocaml}
     let rec search_all tot = function
-          [] -> if tot > 0 then []
-                else [[]] 
-        | x::xs -> if x > tot then serach_all tot xs
-                   else mapcons 
+        | [] -> if tot > 0 then []
+                else [[]]
+        | x::xs -> if x > tot then search_all tot xs
+                   else (mapcons x (search_all (tot - x) xs)) @ (search_all tot xs)  
 \end{minted}
-%% TODO finire
+Questa funzione lavora cercando tutti i sottoinsiemi ricorsivamente creando un albero di sottoinsiemi, ogni volta che viene rimosso un elemento, ovvero scendendo da un ramo dell'albero, viene diminuito il parametro \verb|tot|, se è uguale a zero, allora la sequenza corrente corrisponde ad una soluzione, altrimenti bisogna effettuare backtracing. 
+Ad ogni iterazione si rimuove l'elemento in testa e si determinano tutte le soluzioni nei due sottoinsiemi creati mantenendo e rimuovendo questo elemento in testa. Chiamandola ricorsivamente si scorre per intero l'albero dei sottoinsiemi possibili, ed arrivate alle foglie si scartano le soluzioni non valide e si concatenano tra di loro tutte le soluzioni individuate. Si utilizza la funzione \verb|mapcons| per inserire l'elemento rimosso per ricreare il sottoinsieme soluzione.  
 
 \subsubsection{Problema delle 8 Regine}
 
@@ -987,7 +1061,7 @@ Il problema ora consiste nell'utilizzare questa funzione \verb|safe| per trovare
 
 \section{Funzioni di Ordine Superiore}
 
-Funzioni di ordine superiore sono funzioni che prendono come argomento o restituiscono una funzione, il tipo di una funzione di ordine di una funzione ha più di una freccia. La funzione \verb|sum| è una funzione di ordine superiore:
+Funzioni di ordine superiore sono funzioni che prendono come argomento o restituiscono una funzione, il tipo di una funzione di ordine superiore ha più di una freccia. La funzione \verb|sum| è una funzione di ordine superiore:
 \begin{minted}{ocaml}
     let rec sum f lower upper =
         if lower > upper then 0
@@ -1022,189 +1096,20 @@ Un'applicazione di \verb|map| consiste in una funzione \verb|inits| che restitui
 Si considera la sua implementazione:
 \begin{minted}{ocaml}
     let rec inits = function
-          [] -> []
+        | [] -> []
         | [x] -> [[x]]
         | x::xs -> [x]::(List.map ((@)[x]) (inits xs) )
 \end{minted}
 
-\subsubsection*{Esercizi}
-
-Si definisca la funzione \verb|find|, definita nel modulo List, tale che \verb|find p lst| restituisca il primo elemento della lista \verb|lst| che soddisfa il predicato \verb|p|, altrimenti solleva un'eccezione. 
-\begin{minted}{ocaml}
-    exception NotFound;;
-    let rec find p = function
-          [] -> raise NotFound
-        | x::xs -> if (p x) then x
-                   else find p xs
-\end{minted}
-
-Si definisce la funzione \verb|takeawhile p lst| che riporti la più lunga parte iniziale di \verb|lst| costituita da tutti gli elementi che soddisfano il predicato \verb|p|. 
-\begin{minted}{ocaml}
-    let rec takeawhile p = function
-          [] -> []
-        | x::xs -> if (p x) then x::(takeawhile p xs)
-                   else []
-\end{minted}
-Definire ora un predicato \verb|p|, tale che la funzione \verb|takeawhile| restituisca la parte iniziale contenente solo numeri pari:
-\begin{minted}{ocaml}
-    takeawhile (function x -> x mod 2 = 0) l    
-\end{minted}
-
-Si definisca la funzione \verb|partition: ('a| $\rightarrow$ \verb|bool)| $\rightarrow$ \verb|'a list| $\rightarrow$ \verb|('a list * 'a list)|, tale che applicata ad un predicato \verb|p| ed una lista \verb|lst| restituisca una coppia di liste, dove la prima contiene tutti gli elementi che soddisfano il predicato, mentre la seconda lista contiene tutti gli elementi che non lo soddisfano:
-\begin{minted}{ocaml}
-    let partition p l =
-        let rec aux (yes, no) = function
-              [] -> (yes, no)
-            | x::xs -> if (p x) then aux ((yes@[x]), no) xs
-                       else aux (yes, (no@[x])) xs
-        in aux ([], []) l    
-\end{minted}
-
-Definire la funzione \verb|pairwith|, che dato un elemento ed una lista restituisce una lista di coppie formate dall'elemento passato e l'elemento corrispondente della lista passata, utilizzando \verb|List.map|
-\begin{minted}{ocaml}
-    let pairwith x l = List.map (function y -> (x, y) ) l
-\end{minted}
-
-Definire la funzione \verb|setdiff| per la differenza insiemistica, utilizzando \verb|List.filter|:
-% \begin{minted}{ocaml}
-%     let rec isin l x = match l with
-%           [] -> true
-%         | y::ys -> if (x = y) then false
-%                    else isin ys x;;
-%     let setdiff l1 l2 = List.filter (isin l2) l1
-% \end{minted}
-
-\begin{minted}{ocaml}
-    let mem l x = List.exists ((=) x) l;;
-    let setdiff l1 l2 = List.filter (not (mem l2)) l1
-\end{minted}
-
-Un'altra soluzione possibile è la seguente:
-\begin{minted}{ocaml}
-    list rec setdiff l1 = function
-          [] -> l1
-        | x::xs -> setdiff(List.fiter (function x -> x <> n) l1) xs    
-\end{minted}
-
-%% TODO esempio powerset
+Si considera una funzione che produca l'insieme delle parti di un insieme, ovvero applicata ad un insieme $S$ restituisce tutti i possibili sottoinsiemi di $S$. 
+Per implementare questa funzione data una rappresentazione di tipo lista $l$ dell'insieme $S$, si rimuove dalla lista il primo elemento $x$, si considera il sottoinsieme contenente solo questo elemento $[x]$, e tutti gli altri sottoinsiemi, richiamando ricorsivamente la funzione, concatenati a questo elemento $x$ rimosso. 
+Non si può utilizzare l'operatore \verb|cons| infisso, quindi si utilizza l'operatore di concatenazione infisso: %% TODO why?
 \begin{minted}{ocaml}
     let rec powerset = function
-          [] -> [[]]
-        | x::xs -> []::[[x]]::(List.map ((@) [x]) (powerset xs))
+        | [] -> [[]]
+        | x::xs -> (powerset xs)@(List.map ((@) [x]) (powerset xs))
 \end{minted}
 
 \clearpage
-
-\section{Esercitazione 2}
-
-%% TODO add esercitazione n. 1
-
-Definire una funzione \verb|ultime_cifre:| \verb|-> int * int| che riporti il valore intero delle due ultime cifre di un \verb|int|. Dato un numero, il suo modulo base 10 restituisce l'ultima cifra. Mentre per ottenere la penultima si effettua una divisione intera per 10 per eliminare l'ultima cifra e si riapplica il modulo base 10 per ottenere questa cifra:
-\begin{minted}{ocaml}
-    let ultime_cifre x = (abs(x) mod 10, abs(x/10) mod 10);;
-\end{minted}
-
-%% TODO esercitazione 17/3/25
-
-Una cifra è bella se è 0, 3 o 7; un numero è bello se la sua ultima cifra è bella e la penultima (se esiste) non lo è. Definire un predicato \verb|bello: int -> bool|, che determini se un numero è bello, la funzione non deve mai sollevare eccezioni, ma riportare sempre un \verb|bool|. 
-\begin{minted}{ocaml}
-    let bello x = 
-        match abs(x mod 10) with
-            0 | 3 | 7 -> (match (abs(x mod 10))/10 with
-                0 | 3 | 7 -> x < 10
-                    3 | 7 -> false
-                    | 0 -> x < 100
-                    | _ -> true)
-            | _ -> false;;
-\end{minted}
-
-Scrivere una funzione \verb|data: int * string -> bool|, che applicata ad una coppia \verb|(d, m)| di un intero \verb|d| e una stringa \verb|m|, determini se la coppia rappresenta una data corretta, assumendo che l'anno non sia bisestile, si assuma che i mesi siano rappresentati da stringhe con caratteri minuscoli. La funzione on deve sollevare eccezioni, ma riportare sempre un \verb|bool|. 
-È utile scrivere una funzione \verb|gdm| per determinare i giorni di un mese:
-\begin{minted}{ocaml}
-    let gdm m = 
-        match with
-        "gennaio"  | "marzo" | "maggio" | "luglio" | "agosto" | "ottobre" | "dicembre" -> 31
-        | "aprile" | "giugno" | "settembre" | "novembre" -> 30
-        | "febbraio" -> 28
-        | _ -> 0
-\end{minted}
-La funzione principale è quindi:
-\begin{minted}{ocaml}
-    let data (d,m) = d <= gdm m && d > 0;;
-\end{minted}
-
-\clearpage
-
-\section{Esercitazione 3}
-
-\begin{minted}{ocaml}
-    exception NoElement ;; 
-    let maxlist = function
-          [] -> raise NoElement
-        | x::xs -> let rec aux m = function
-              [] -> m
-            | x::xs -> if x > m then aux x xs
-                       else aux m xs
-            in aux x xs
-\end{minted}
-
-Si ipotizza di non avere a disposizione l'operatore \verb|@|, definire la concatenazione:
-\begin{minted}{ocaml}
-    let rec append l1 l2 = match l1 with
-          [] -> l2
-        | x::xs -> x::(append xs l2) 
-\end{minted}
-In modo iterativo diventa:
-\begin{minted}{ocaml}
-    let append l1 l2 =
-        let rec aux a = function
-              [] -> a
-            | x::xs -> aux (x::a) xs
-        in aux l2 List.rev(l1)
-\end{minted}
-
-
-\begin{minted}{ocaml}
-    let rec nth n = function
-          [] -> raise NoElement
-        | x::xs -> if n < 0 then raise NoElement
-                   else if n = 0 then x
-                        else nth (n-1) xs;;
-\end{minted}
-
-
-\begin{minted}{ocaml}
-    let rec nondec = function
-          [] | [a] -> true
-        | x::y::xs -> if x > y then false
-                      else nondec (y::xs)
-\end{minted}
-
-
-%% TODO idfk 
-
-\begin{minted}{ocaml}
-    let min_dei_max ls = 
-        let rec listmax acc = function
-              [] -> acc
-            | x::xs -> listmax ((maxlist x)::acc) xs
-        in let rec minlist = function
-              [] -> raise NoElement
-            | x::xs -> try let y = minlist(xs)
-                           in min x y
-                       with _ -> x
-        in minlist(listmax [] ls);;
-\end{minted}
-%% TESTING funzione con ocaml repl
-% min_dei_max [[1;2;3];[3;4;1;0];[78]];;
-
-Concatena l'accumulatore con i massimi di ciascuna lista del secondo argomento, l'argomento implicito è una lista di liste, essendo l'argomento della funzione esterna \verb|ls|. Si può inferire il tipo dato che ad un elemento della lista \verb|x| viene passato come argomento a \verb|maxlist|, quindi deve essere una lista. 
-
-
-
-\verb|split2| agisce in modo simile alla funzione \verb|split| definita precedentemente, divide in due parti ...
-
-\clearpage
-
 
 \end{document}
