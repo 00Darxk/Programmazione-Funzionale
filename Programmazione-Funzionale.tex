@@ -1107,8 +1107,61 @@ Non si può utilizzare l'operatore \verb|cons| infisso, quindi si utilizza l'ope
 \begin{minted}{ocaml}
     let rec powerset = function
         | [] -> [[]]
-        | x::xs -> (powerset xs)@(List.map ((@) [x]) (powerset xs))
+        | x::xs -> let ps = powerset xs
+                   in ps@(List.map ((@) [x]) ps)
 \end{minted}
+%% TODO add versione iterativa
+
+Si determina una funzione che realizzi il prodotto cartesiano \verb|cartprod: 'a list| $\rightarrow$ \verb|'b list| $\rightarrow$ \verb|('a * 'b) list|, applicata a due insiemi \verb|setA| e \verb|setB| riporta la lista di tutte le coppie $(x,y)$ con $x\in$\verb|setA| e $y\in$\verb|setB|. Si definisce la funzione ausiliaria \verb|pair: 'a| $\rightarrow$ \verb|'b| $\rightarrow$ \verb|('a * 'b)| per poter utilizzare \verb|map|:
+\begin{minted}{ocaml}
+    let pair x y = (x, y);;
+    let rec cartprod l1 l2 = match l1 with
+        | [] -> []
+        | x::xs -> (List.map (pair x) l2)@(cartprod xs l2)
+\end{minted}
+
+%% TODO aggiungere funzioni code e decode morse
+Si considerano le funzioni per rappresentare e decodificare un carattere in codice morse e viceversa, utilizzando i due caratteri punto \verb|.| e linea \verb|-|. Data una lista di codici morse, si può usare la funzione \verb|map|, applicata sulla funzione di decodifica per restituire una lista di caratteri. 
+%% TODO funzioni explode ed implode iterativa
+Bisogna comunque passare da una lista di caratteri ad una stringa, ed in OCaml, questi due tipi non sono coincidenti quindi sono necessarie due funzioni \verb|implode char list| $\rightarrow$ \verb|string| e \verb|implode: string| $\rightarrow$ \verb|char list|. La funzione \verb|implode| si può realizzare semplicemente come:
+\begin{minted}{ocaml}
+    let rec implode = function
+        | [] -> []
+        | x::xs -> (String.make 1 x)^(implode xs)
+\end{minted}
+Mentre per la funzione \verb|explode| bisogna iterare su ogni elemento della stringa, e bisogna considerare l'ordine in cui verranno aggiunti gli elementi letti:
+\begin{minted}{ocaml}
+    let explode s = 
+        let rec aux acc i x =
+            if i < 0 then acc
+            else aux (s.[i]::acc) (i - 1) s
+        in aux [] ((String.length s) - 1) s 
+\end{minted}
+Se si itera partendo dall'indice iniziale, allora bisogna invertire la stringa passata alla funzione, altrimenti restituirebbe la lista corrispondente invertita. 
+
+Altri funzioni utili nel modulo List sono:
+\begin{itemize}
+    \item \verb|List.rev_map: ('a| $\rightarrow$ \verb|'b)| $\rightarrow$ \verb|'a list| $\rightarrow$ \verb|'b list|, definita come la funzione \verb|map| invertita, oppure la funzione \verb|map| applicata sulla stessa lista invertita.  
+    \item \verb|List.find: ('a| $\rightarrow$ \verb|bool)| $\rightarrow$ \verb|'a list| $\rightarrow$ \verb|'a|, restituire il primo elemento della lista che soddisfa il predicato.
+    \item \verb|List.partition: ('a| $\rightarrow$ \verb|bool)| $\rightarrow$ \verb|'a list| $\rightarrow$ \verb|'a list * 'a list| divide la lista in un prodotto di liste, dove la prima soddisfa il predicato e la seconda non lo soddisfa. 
+    \item \verb|List.fold_left: ('a| $\rightarrow$ \verb|'b| $\rightarrow$ \verb|'a)| $\rightarrow$ \verb|'a| $\rightarrow$ \verb|'b list| $\rightarrow$ \verb|'a| 
+    \item \verb|List.fold_left: ('a| $\rightarrow$ \verb|'b| $\rightarrow$ \verb|'a)| $\rightarrow$ \verb|'b list| $\rightarrow$ \verb|'a| $\rightarrow$ \verb|'a|
+\end{itemize}
+La funzione \verb|rev_map| viene definita come:
+\begin{minted}{ocaml}
+    List.rev_map f lst = List.rev (List.map f lst)    
+\end{minted}
+Tra le più importanti di queste sono \verb|fold_left| e \verb|fold_right|. 
+Queste funzioni permettono di attraversare una lista, sostituendo al costruttore della lista \verb|[]|, una certa funzione su cui viene applicata, fornendo il caso base a la lista su cui viene applicata. Questi due argomenti sono invertiti tra le due funzioni. Le due funzioni attraversano la lista in due direzioni opposte, \verb|fold_right| parte dall'inizio, mentre \verb|fold_left| parte dalla fine. Quando l'operatore di ricorsione è commutativo, utilizzare le due funzioni è equivalente. 
+
+%% TODO add img alberi delle liste fold right 1 a sinistra, fold left 3 a destra
+
+La funzione \verb|sumof| che somma tutti gli elementi di una lista si può quindi rappresentare come:
+\begin{minted}{ocaml}
+    let sumof l = List.fold_right (+) l 0;;
+    let sumof l = List.fold_left (+) 0 l;;    
+\end{minted}
+
 
 \clearpage
 

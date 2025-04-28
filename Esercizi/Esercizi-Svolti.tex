@@ -260,7 +260,37 @@ Un'altra soluzione possibile è la seguente:
         | x::xs -> setdiff (List.filter (function y -> y <> x) l1) xs    
 \end{minted}
 
-\clearpage
 
+Determinare la funzione \verb|verifica_matrice: int| $\rightarrow$ \verb|int list list| $\rightarrow$ \verb|bool|, che dato un intero ed una matrice rappresentata come liste di liste, controlla se è presente almeno una riga dove tutti gli elementi sono minori di $n$. Si può definire una funzione \verb|verifica_riga| che controlla la condizione su un'unica riga:
+\begin{minted}{ocaml}
+    let verifica_riga n l = List.for_all ((>) n) l 
+\end{minted}
+La funzione di partenza si realizza quindi come:
+\begin{minted}{ocaml}
+    let verifica_matrice n l = List.exists (verifica_riga n) l    
+\end{minted}
+
+\begin{minted}{ocaml}
+    let rec tutte_liste_con n x y = match n with
+        | 0 -> [[]]
+        | n -> let r = tutte_liste_con (n - 1) x y
+               in (List.map (List.cons x) r)@(List.map (List.cons y) r)
+\end{minted}
+
+\begin{minted}{ocaml}
+    let rec interleave n = function
+        | [] -> [[n]]
+        | x::xs -> (n::x::xs)::(List.map ((@) [x]) (interleave n xs))
+\end{minted}
+
+% lista di tutte le possibili permutazioni
+\begin{minted}{ocaml}
+    let rec permut l = match l with
+        | [] -> [[]]
+        | x::xs -> List.flatten (List.map (interleave x) (permut xs))
+\end{minted}
+
+
+\clearpage
 
 \end{document}
