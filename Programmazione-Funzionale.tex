@@ -1162,7 +1162,109 @@ La funzione \verb|sumof| che somma tutti gli elementi di una lista si può quind
     let sumof l = List.fold_left (+) 0 l;;    
 \end{minted}
 
-
 \clearpage
+
+\section{Definizioni di Nuovi Tipi}
+
+Un tipo è un insieme di valori, per poter definire un nuovo tipo, è necessario un nome per il tipo e come costruire i valori del tipo, ovvero i loro costruttori. 
+
+
+Si considerano i tipi enumerati, tipi costruiti da un numero finito di valori, il tipo \verb|bool| anch'esso un tipo enumerato, con solamente due possibili valori. I valori di tipi enumerati sono identificati da costanti, sono un tipo particolare di costruttori, che non richiedono alcun argomento. 
+
+Per definire un nuovo tipo bisogna usare la parola chiave \verb|type|, seguita da un'assegnazione di valori del tipo separati da \texttt{|}, con la prima lettera maiuscola. Questi nuovi valori e tipi possono essere utilizzati per la creazione di nuovi valori e di nuovi tipi. 
+
+\begin{minted}{ocaml}
+    type direzione = Su | Giù | Destra | Sinistra
+\end{minted}
+
+% ESEMPIO rappresentazione carte napoletane
+
+Quando viene definito un tipo enumerato, si ha l'uguaglianza, quindi è possibile utilizzare operazioni di confronto su questi tipi costruiti senza doverle definire, come \verb|List.mem|. Per recuperare il valore numerico o non di uno di questi tipi si può introdurre una funzione con il pattern matching, associando ogni valore del tipo costruito ad un valore di tipo primitivo. 
+
+
+Per rappresentare la posizione ed il movimento di un oggetto su un piano bidimensionale, in una direzione oppure al cambiamento della direzione, bisogna utilizzare il nuovo tipo definito ``direzione''. La posizione di un oggetto nel piano è definita da un punto ed una direzione, quindi si considera il nuovo tipo:
+\begin{minted}{ocaml}
+    type posizione = int * int * direzione
+\end{minted}
+Questo non rappresenta un nuovo tipo, ma un'abbreviazione di tipo, ogni volta che si vuole utilizzare questa collezione di tipi già definiti. Si sta assegnando un altro nome ad un tipo già esistente. Si definiscono delle operazioni per estrarre le componenti della posizione:
+\begin{minted}{ocaml}
+    let pos_x (x,_,_) = x
+    let pos_y (_,y,_) = y
+    let pos_dir (_,_,dir) = dir    
+\end{minted}
+
+
+Si vogliono rappresentare due tipi di azioni, girare di $90^\circ$ in senso orario, oppure andare avanti di $n$ passi, con $n$ numero intero. Si vuole definire un tipo di dati azione per rappresentare queste azioni. Sembra che sia necessario un numero infinito di valori poiché sono presenti un numero infinito di interi, ma se si vuole realizzare un tipo enumerato, i valori devono essere finiti. Si utilizzano quindi i costruttori funzionali, che permette di rappresentare una funzione, il costruttore \verb|Avanti| restituisce il tipo azione se viene applicato su un tipo intero:
+\begin{minted}{ocaml}
+    type azione = Gira | Avanti of int
+\end{minted}
+Si utilizza la parola chiave \verb|of| per definire il costruttore funzionale. Mediante il pattern matching è possibile definire selettori di dei tipi:
+\begin{minted}{ocaml}
+    let int_of_act = function 
+        | Avanti n -> n
+        | _ -> failwith "int_of_act"
+\end{minted}
+Se si fosse definito il tipo posizione introducendo un nuovo tipo, con il suo costruttore, bisognerebbe modificar ele funzioni precedenti per i selettori della tripla, per essere selettori del tipo:
+\begin{minted}{ocaml}
+    type posizione = Pos of int * int * direzione
+\end{minted}
+%% TODO add selettori posizione, ... slide 
+
+Bisogna utilizzare le parentesi altrimenti nell'uso delle funzioni, OCaml non interpreta il costruttore come applicato sugli argomenti, dato che associa a sinistra. 
+
+La funzione di spostamento prende due argomenti, la posizione corrente e l'azione da effettuare, quello che effettua questa funzione dipende dal valore dell'azione, si dovrà calcolare i due possibili modi in cui questa funzione può comportarsi. 
+
+
+La funzione gira, associata all'azione di valore \verb|Gira| è di tipo \verb|direzione| $\rightarrow$ \verb|direzione|:
+\begin{minted}{ocaml}
+    let gira = function
+        | Su -> Destra
+        | Destra -> Giù
+        | Giù -> Sinistra
+        | Sinistra -> Su
+\end{minted}
+
+Mentre la funzione avanti associata al valore \verb|Avanti| del tipo |azione| è di tipo \verb|posizione| $\rightarrow$ \verb|int| $\rightarrow$ \verb|posizione|:
+\begin{minted}{ocaml}
+    let avanti (x,y,d) n = match d with
+        | Destra -> (x+n,y,d)
+        | Giù -> (x,y-n,d)
+        | Sinistra -> (x-n,y,d)
+        | Su -> (x,y+n,d)
+\end{minted}
+
+La funzione \verb|sposta| quindi effettua un pattern matching sui due possibili valori di azione e chiama la funzione corrisponde:
+\begin{minted}{ocaml}
+    let sposta (x,y,d) = function
+        | Gira -> (x,y,gira d)
+        | Avanti n -> avanti (x,y,d) n
+\end{minted}
+
+
+Data la funzione sposta, definire la funzione esegui che data una posizione, ed una lista di azioni restituisce la posizione data dopo aver eseguito le azioni nell'ordine in cui sono fornite:
+\begin{minted}{ocaml}
+    let rec esegui pos la = List.fold_left sposta pos la
+\end{minted}
+
+% esegui (0,0,Su) [Gira; Gira];;
+
+
+Si possono usare i tipi per effettuare unioni di tipi, si considera un tipo fintamente enumerato, che rappresenta l'unione del tipo intero e reale:
+\begin{minted}{ocaml}
+    type number = Int of int | Float of float;; 
+\end{minted}
+Questa rappresenta l'unione disgiunta di questi due tipi, i costruttori marcano gli elementi, rendendo riconoscibile la loro provenienza. 
+
+Oltre ad espandere tipi si possono restringere. Si vuole creare un tipo che contenga solamente i numeri naturali, tramite la definizione induttiva dei numeri naturali bisogna indicare che $0\in\mathbb{N}$ e che data una funzione successore $\rho$, $\forall n\in\mathbb{N}\implies \rho(n)\in\mathbb{N}$. Gli unici elementi dell'insieme dei numeri naturali sono quelli ottenibili dai primi due passaggi. Si definisce ricorsivamente il tipo dei numeri naturali come:
+\begin{minted}{ocaml}
+    let nat = Zero | Succ of nat    
+\end{minted}
+
+%% TODO add int_of_nat
+
+%% TODO resto del ppt
+% liste in maniera polimorfa
+
+
 
 \end{document}
