@@ -1534,4 +1534,69 @@ Si definisce quindi la funzione \verb|propagate| come:
 
 \clearpage
 
+\section{Grafi}
+
+I grafi possono essere considerati una generalizzazione degli alberi. Una delle caratteristiche degli alberi è di avere una sola radice, ed è possibile che esista un unico cammino che connetta due nodi. 
+Nei grafi non è presente il concetto di radice, e sono possibili percorsi attraverso il grafo per raggiungere un certo nodo $n$, partendo da un altro nodo $m$. I nodi possono essere orientati, ovvero un arco che connette due nodi può essere caratterizzato da una direzione di navigabilità permessa. 
+
+Per realizzare un grafo in OCaml, bisogna definire il tipo grafo, una lista associativa formata da coppie di chiavi-valore, dove la chiave è il nodo dell'albero ed il valore è la lista dei nodi direttamente accessibili a quel nodo. 
+%% TODO controllare codice
+\begin{minted}{ocaml}
+    type 'a graph = Node of 'a * 'a graph list 
+\end{minted}
+Si può definire una funzione successore che restituisce i nodi successori di un nodo dato $x$, considerando la funzione \verb|List.assoc|, poiché si tratta di una lista associativa:
+\begin{minted}{ocaml}
+    exception NodeNotFound
+    let successore x l =
+        try List.assoc x l
+        with Not_found -> raise NodeNotFound
+\end{minted}
+
+Questa non è l'unica rappresentazione possibile dei grafi, si potrebbe definire il tipo grafo con un altro tipo, memorizzando gli archi orientati, come coppie di nodi, dove il primo nodo è il nodo uscente, ed il secondo è il nodo entrante:
+\begin{minted}{ocaml}
+    type 'a graph = ('a * 'a) list    
+\end{minted}
+Questa è una rappresentazione di un grafo orientato, per un grafo non orientato, la posizione dei nodi all'interno dell'arco è indifferente, gli archi $(n,m)$ e $(m,n)$ sono quindi equivalenti su grafi non orientati. Quindi un grafo non orientato ha la stessa rappresentazione, solamente bisogna implementare le funzioni opportunamente per considerare gli archi orientati o meno, in modo che sia conforme alle specifiche richieste. 
+Altrimenti si possono considerare tutti gli archi ed i loro inversi, poiché possono essere attraversati sia in un verso che nell'altro. 
+
+Utilizzando questa rappresentazione per trovare i successori bisogna cercare nella lista:
+\begin{minted}{ocaml}
+    let rec successori x = function
+        | [] -> []
+        | (y,z):xs -> if x = y then z::(successori x xs)
+                      else successori x xs
+\end{minted}
+Più semplicemente si può realizzare utilizzando la funzione \verb|filter| del modulo \verb|List|:
+\begin{minted}{ocaml}
+    let successori x g = List.map snd (List.filter (function (y,_) -> x = y) g)    
+\end{minted}
+Invece per determinare tutti i nodi vicini ad un nodo dato $x$ in un grafo $g$, si può iterare come coni successori, e controllare anche il secondo componente della coppia. Per renderla più semplice si riutilizza la funzione \verb|filter|:
+\begin{minted}{ocaml}
+    let successori x g = List.map (function (y,z) -> if y = x then z else y) (List.filter (function (y,z) -> x = y || x = z) g)    
+\end{minted}
+
+Analizzando gli alberi si è visto che esistono diversi algoritmi per visitare gli alberi, allo stesso modo sono possibili diversi modi di visitare un grafo. Potrebbero essere presenti dei cicli, e quindi il processo di visita potrebbe rimanere bloccato su uno di questi cicli. Il problema viene risolto tenendo traccia dei nodi già visitati e da visitare. 
+I metodi più comuni sono DFS, \textit{Depth First Search}, o visita in profondità, dove dato un nodo $x$, si analizza questo, prima di analizzare i successori. Mentre il contrario è la visita in ampiezza BFS, \textit{Breath First Search}, dove prima di analizzare il nodo corrente $x$, si analizzano i successivi. 
+Per implementare questi due metodi, è semplicemente utilizzare funzioni di aggiunta diverse alla collezione che contiene i nodi da visitare chiamate dei nodi pendenti, in DFS questa viene gestita come una pila, con filosofia LIFO, \textit{Last In First Out}, ovvero il primo elemento ad essere aggiunto, sarà il primo ad essere rimosso, e quindi analizzato. Si può realizzare come una lista, dove si applica aggiunta e rimozione in testa. 
+La visita in ampiezza BFS invece realizzare questa collezione come una coda, seguendo la filosofia \textit{FIFO}, \textit{Firs In First Out}, dove il primo elemento ad essere aggiunta è l'ultimo elemento ad essere rimosso. 
+
+Si considera una possibile implementazione della visita DFS, utilizzando una funzione ausiliaria che tiene traccia dei nodi visitati, e prende come parametro la lista dei nodi pendenti:
+\begin{minted}{ocaml}
+    let depth_first_search g s = 
+        let rec search visited = function
+            | [] -> visited
+            | x::xs -> if (List.mem x visited) then search visited xs
+                       else search (x::visited) ((successori x g)@xs)
+        in search [] [s]
+\end{minted}
+Nella visita in ampiezza, l'unica differenza è che i successori del nodo corrente vengono inseriti in coda, e non più in testa:
+\begin{minted}{ocaml}
+    let breath_first_search g s = 
+        let rec search visited = function
+            | [] -> visited
+            | x::xs -> if (List.mem x visited) then search visited xs
+                       else search (x::visited) (xs::(successori x g))
+        in search [] [s]        
+\end{minted}
+
 \end{document}
