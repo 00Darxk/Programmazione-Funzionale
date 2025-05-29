@@ -290,6 +290,73 @@ La funzione di partenza si realizza quindi come:
         | x::xs -> List.flatten (List.map (interleave x) (permut xs))
 \end{minted}
 
+\clearpage
+
+\section{Esercitazione 8}
+
+
+%% TODO esercizi 12/5/25 preorder, postorder, inorder d) 2/8 pg ex
+
+% type 'a tree = 
+%     | Empty
+%     | Tr of 'a * 'a tree * 'a tree
+
+
+% let rec reflect = function
+%     | Empty -> Empty
+%     | Tr(x, l ,r) -> Tr(x, reflect r, reflect l)
+% ;;
+
+
+% let rec drop n = function
+%     | [] -> []
+%     | x::xs -> if n > 0 then drop (n-1) xs else x::xs
+
+% let rec take n = function
+%     | [] -> []
+%     | x::xs -> if n > 0 then x::(take (n-1) xs) else []
+Creare le funzioni \verb|balpreorder| e \verb|balinorder| che data una lista, ne creano un albero bilanciato, in pre-ordine ed in-ordine:
+\begin{minted}{ocaml}
+    let rec balpreorder = function
+        | [] -> Empty
+        | x::xs -> let size = List.length xs in 
+                   Tr(x, (balpreorder (take (size/2) xs)), (balpreorder (drop (size/2) xs)))
+\end{minted} 
+Mentre per la versione in-ordine:
+\begin{minted}{ocaml}
+    let rec balinorder = function
+        | [] -> Empty
+        | l -> let n = (List.length l)/2 in 
+               let l' = drop n l in 
+               Tr(List.hd l', (balinorder (take n l)), (balinorder (List.tl l')))
+\end{minted}
+Per realizzare la versione in post-ordine, semplicemente si riflette l'albero ottenuto:
+\begin{minted}{ocaml}
+    let balpostorder l = reflet (balpreorder l)    
+\end{minted}
+
+\clearpage
+
+\section{Esercitazione 9}
+
+%% TODO subexp
+
+
+Definire una funzione che dato un albero $n$-ario restituisce una lista, visitandolo in pre-ordine, simmetricamente ed in post-ordine:
+\begin{minted}{ocaml}
+    let rec postorder = function
+        | Tr(x,[]) -> [x]
+        | Tr(x,lt) -> (List.flatten (List.map inorder lt))@[x]
+\end{minted}
+\begin{minted}{ocaml}
+    let rec inorder = function
+        | Tr(x,[]) -> [x]
+        | Tr(x,lt) -> (inorder (List.hd lt))@[x]@(List.flatten (List.map inorder (List.tl lt)))
+\end{minted}
+
+
+
+
 
 \clearpage
 

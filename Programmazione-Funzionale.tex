@@ -1168,6 +1168,7 @@ La funzione \verb|sumof| che somma tutti gli elementi di una lista si può quind
 
 Un tipo è un insieme di valori, per poter definire un nuovo tipo, è necessario un nome per il tipo e come costruire i valori del tipo, ovvero i loro costruttori. 
 
+\subsection{Tipi Enumerati}
 
 Si considerano i tipi enumerati, tipi costruiti da un numero finito di valori, il tipo \verb|bool| anch'esso un tipo enumerato, con solamente due possibili valori. I valori di tipi enumerati sono identificati da costanti, sono un tipo particolare di costruttori, che non richiedono alcun argomento. 
 
@@ -1181,12 +1182,11 @@ Per definire un nuovo tipo bisogna usare la parola chiave \verb|type|, seguita d
 
 Quando viene definito un tipo enumerato, si ha l'uguaglianza, quindi è possibile utilizzare operazioni di confronto su questi tipi costruiti senza doverle definire, come \verb|List.mem|. Per recuperare il valore numerico o non di uno di questi tipi si può introdurre una funzione con il pattern matching, associando ogni valore del tipo costruito ad un valore di tipo primitivo. 
 
-
-Per rappresentare la posizione ed il movimento di un oggetto su un piano bidimensionale, in una direzione oppure al cambiamento della direzione, bisogna utilizzare il nuovo tipo definito ``direzione''. La posizione di un oggetto nel piano è definita da un punto ed una direzione, quindi si considera il nuovo tipo:
+Si vuole rappresentare la posizione ed il movimento di un oggetto su un piano bidimensionale, in una direzione oppure al cambiamento della direzione, bisogna utilizzare il nuovo tipo definito ``direzione''. La posizione di un oggetto nel piano è definita da un punto ed una direzione, quindi si considera il nuovo tipo:
 \begin{minted}{ocaml}
     type posizione = int * int * direzione
 \end{minted}
-Questo non rappresenta un nuovo tipo, ma un'abbreviazione di tipo, ogni volta che si vuole utilizzare questa collezione di tipi già definiti. Si sta assegnando un altro nome ad un tipo già esistente. Si definiscono delle operazioni per estrarre le componenti della posizione:
+Questo non rappresenta un nuovo tipo, ma un'abbreviazione di tipo, ogni volta che si vuole utilizzare questa collezione di tipi già definiti. Si sta assegnando un altro nome ad un tipo già esistente. Si definiscono i selettori per estrarre le componenti della posizione:
 \begin{minted}{ocaml}
     let pos_x (x,_,_) = x
     let pos_y (_,y,_) = y
@@ -1208,29 +1208,37 @@ Se si fosse definito il tipo posizione introducendo un nuovo tipo, con il suo co
 \begin{minted}{ocaml}
     type posizione = Pos of int * int * direzione
 \end{minted}
-%% TODO add selettori posizione, ... slide 
-
+Si possono definire i selettori di posizione relativi a questo nuovo tipo:
+\begin{minted}{ocaml}
+    let xcoord (Post(x,_,_)) = x
+    let ycoord (Post(_,y,_)) = y
+    let dir (Pos(_,_,d)) = d
+    let punto_di (Pos(x,y,_)) = (x,y)
+\end{minted}
 Bisogna utilizzare le parentesi altrimenti nell'uso delle funzioni, OCaml non interpreta il costruttore come applicato sugli argomenti, dato che associa a sinistra. 
+In questo caso il nuovo tipo \verb|posizione| è diverso dal tipo definito precedentemente, poiché in questo caso non rappresenta un'abbreviazione di un tipo già definito, ma è un tipo a sé, avendo un unico valore \verb|Pos| che prende la tripla, precedentemente individuata dal ``tipo'' \verb|posizione|
 
-La funzione di spostamento prende due argomenti, la posizione corrente e l'azione da effettuare, quello che effettua questa funzione dipende dal valore dell'azione, si dovrà calcolare i due possibili modi in cui questa funzione può comportarsi. 
+
+
+La funzione di spostamento \verb|sposta| prende due argomenti, la posizione corrente e l'azione da effettuare, quello che effettua questa funzione dipende dal valore dell'azione, si dovrà calcolare i due possibili modi in cui questa funzione può comportarsi. 
 
 
 La funzione gira, associata all'azione di valore \verb|Gira| è di tipo \verb|direzione| $\rightarrow$ \verb|direzione|:
 \begin{minted}{ocaml}
     let gira = function
         | Su -> Destra
-        | Destra -> Giù
         | Giù -> Sinistra
+        | Destra -> Giù
         | Sinistra -> Su
 \end{minted}
 
 Mentre la funzione avanti associata al valore \verb|Avanti| del tipo |azione| è di tipo \verb|posizione| $\rightarrow$ \verb|int| $\rightarrow$ \verb|posizione|:
 \begin{minted}{ocaml}
     let avanti (x,y,d) n = match d with
-        | Destra -> (x+n,y,d)
-        | Giù -> (x,y-n,d)
-        | Sinistra -> (x-n,y,d)
         | Su -> (x,y+n,d)
+        | Giù -> (x,y-n,d)
+        | Destra -> (x+n,y,d)
+        | Sinistra -> (x-n,y,d)
 \end{minted}
 
 La funzione \verb|sposta| quindi effettua un pattern matching sui due possibili valori di azione e chiama la funzione corrisponde:
@@ -1241,30 +1249,289 @@ La funzione \verb|sposta| quindi effettua un pattern matching sui due possibili 
 \end{minted}
 
 
-Data la funzione sposta, definire la funzione esegui che data una posizione, ed una lista di azioni restituisce la posizione data dopo aver eseguito le azioni nell'ordine in cui sono fornite:
+Data la funzione sposta, definire la funzione esegui che data una posizione \verb|pos|, ed una lista di azioni \verb|la| restituisce la posizione corrispondente dopo aver eseguito le azioni nell'ordine in cui sono fornite:
 \begin{minted}{ocaml}
     let rec esegui pos la = List.fold_left sposta pos la
 \end{minted}
 
-% esegui (0,0,Su) [Gira; Gira];;
+\subsection{Unione di Tipi}
 
-
-Si possono usare i tipi per effettuare unioni di tipi, si considera un tipo fintamente enumerato, che rappresenta l'unione del tipo intero e reale:
+Si possono usare i tipi enumerati per effettuare unioni di tipi, si considera un tipo fintamente enumerato, che rappresenta l'unione del tipo intero e reale:
 \begin{minted}{ocaml}
     type number = Int of int | Float of float;; 
 \end{minted}
-Questa rappresenta l'unione disgiunta di questi due tipi, i costruttori marcano gli elementi, rendendo riconoscibile la loro provenienza. 
+Questa rappresenta l'unione disgiunta di questi due tipi, i costruttori marcano gli elementi, rendendo riconoscibile la loro provenienza. In seguito si possono definire operazioni su questo tipo, che permettono di applicare operazioni aritmetiche su tipi disgiunti:
+\begin{minted}{ocaml}
+    let sum = function
+        | (Int x, Int y) -> Int (x + y)
+        | (Int x, Float y) -> Float ((float x) +. y)
+        | (Float x, Int y) -> Float (x +. float y)
+        | (Float x, Float y) -> Float (x +. y)    
+\end{minted}
 
-Oltre ad espandere tipi si possono restringere. Si vuole creare un tipo che contenga solamente i numeri naturali, tramite la definizione induttiva dei numeri naturali bisogna indicare che $0\in\mathbb{N}$ e che data una funzione successore $\rho$, $\forall n\in\mathbb{N}\implies \rho(n)\in\mathbb{N}$. Gli unici elementi dell'insieme dei numeri naturali sono quelli ottenibili dai primi due passaggi. Si definisce ricorsivamente il tipo dei numeri naturali come:
+Questo nuovo tipo rappresenta l'unione disgiunta dei tipi che sono argomenti dei costruttori di questo tipo enumerato. Dati due tipi $A$ e $B$, la loro unione disgiunta è data da:
+\begin{gather*}
+    A\dot\cup B=\left\{(a,0)\big|a\in A\right\}\cup\left\{(b,1)\big|b\in B\right\}
+\end{gather*}
+
+
+Oltre ad espandere tipi si possono restringere. Si vuole creare un tipo che contenga solamente i numeri naturali. Si considerano gli assiomi di Peano per definire i numeri naturali induttivamente:
+\begin{itemize}
+    \item $0\in\mathbb{N}$
+    \item $\forall n\in\mathbb{N}\to\rho(n)\in\mathbb{N}$, dove $\rho$ è una qualche funzione successore, definita su $\mathbb{N}$
+    \item Gli unici elementi di $\mathbb{N}$ sono quelli ottenibili applicando, ricorsivamente, i primi due assiomi. 
+\end{itemize}
+Si può definire ricorsivamente il tipo dei numeri naturali come:
 \begin{minted}{ocaml}
     let nat = Zero | Succ of nat    
 \end{minted}
+Dove tutti i valori di \verb|nat| sono o \verb|Zero| o applicazioni ricorsive di \verb|Succ|. Su questi tipi induttivi si possono definire operazioni ricorsivamente, definendo una funzione \verb|succ: int| $\rightarrow$ \verb|int|, che incrementa un qualsiasi intero su cui viene applicata:
+\begin{minted}{ocaml}
+    let rec int_of_nat = function
+        | Zero -> 0
+        | Succ n -> succ(int_of_nat n)
+\end{minted}
+Si ricorda che $n$ a cui è applicata \verb|Succ| nel secondo match è di tipo \verb|nat|, quindi non si può applicare direttamente \verb|succ n|. 
+Si possono definire operazioni aritmetiche sui numeri naturali, come è stato realizzato per l'unione degli interi e dei reali:
+\begin{minted}{ocaml}
+    let rec sum (n, m) = match n with
+        | Zero -> m
+        | Succ k -> Succ(sum(k, m))
+\end{minted}
 
-%% TODO add int_of_nat
+\subsection{Costruttori di Tipo}
 
-%% TODO resto del ppt
-% liste in maniera polimorfa
+La definizione di un tipo può essere parametrica con variabili di tipo o con costruttori polimorfi. Si vuole realizzare un tipo matrice polimorfo, utilizzando lo stereotipo \verb|'a| prima del nome del tipo, si utilizza nella dichiarazione per renderlo polimorfo:
+\begin{minted}{ocaml}
+    let 'a matrix = Mat of 'a list list    
+\end{minted}
+\verb|Mat| è un costruttore di tipi, può creare matrici di qualsiasi tipo. Analogamente si possono creare liste in maniera polimorfa, definendo il costruttore \verb|Cons|:
+\begin{minted}{ocaml}
+    let 'a alist = Nil | Cons of 'a alist    
+\end{minted}
 
 
+Il tipo \verb|option| è un'alternativa all'uso delle eccezioni, permette di realizzare funzioni di tipi parziali, e si può usare al posto delle eccezioni per la propagazione degli errori. Un tipo \verb|option| può avere valore \verb|None|, oltre ad i normali valori di un tipo definito:
+\begin{minted}{ocaml}
+    let 'a option = None | Some of 'a    
+\end{minted}
+Si considerano anche dei selettori per il tipo optional:
+\begin{minted}{ocaml}
+    let valore = function
+        | Some n -> n
+        | None -> failwith "There is no value"
+\end{minted}
+L'esecuzione non si interrompe se viene restituito un valore \verb|None|, dato che è accettato dal tipo \verb|'a option|, se si volesse implementare una divisione si potrebbe utilizzare questo tipo come:
+\begin{minted}{ocaml}
+    let div x y =
+        if y = 0 then None
+        else Some (x /. y)    
+\end{minted}
+
+Si può utilizzare per re-implementare le liste associative, nel modulo List la funzione \verb|assoc| restituisce un'eccezione se la chiave non è presente nel dizionario, mentre utilizzando il tipo \verb|option| si può restituire \verb|None| invece di bloccare l'esecuzione:
+\begin{minted}{ocaml}
+    let rec assoc l x = match l with
+        | [] -> None
+        | (k,v)::rest -> if x = k then Some v
+                         else assoc x rest
+\end{minted}
+
+In questo modo si possono creare funzioni che operano sull'intera lista associativa, senza terminare l'esecuzione in caso di un'eccezione. Dopo aver ottenuto il risultato, questo si può filtrare dato che il valore restituito \verb|None| è valido e confrontabile. 
+Si considera una funzione che restituisce una lista di valori $v$ corrispondenti ad una lista di chiavi $k$, applicata ad una lista associativa $l$:
+\begin{minted}{ocaml}
+    let assoc_all l k = List.map valore (List.filter ((<>) None) (List.map (function x -> assoc x l) k))
+\end{minted}
+
+\clearpage
+
+\section{Alberi}
+
+\subsection{Espressioni Aritmetiche}
+
+Si considerano espressioni costituite dalle applicazioni delle quattro operazioni aritmetiche su variabili o costanti intere. Si può definire induttivamente l'insieme delle espressioni ottenibili solamente seguendo questi tre principi:
+\begin{itemize}
+    \item Se $n\in\mathbb{N}$ allora $n$ è un'espressione
+    \item Se $x$ è una variabile, allora $x$ è un'espressione
+    \item Se $E_1$ e $E_2$ sono due espressioni, allora anche le applicazioni delle operazioni aritmetiche intere su queste due sono a loro volta delle espressioni
+\end{itemize}
+Questo insieme contiene definito contiene un numero infinito di oggetti di base, sono presenti quattro costruttori funzionali, somma, differenza, divisione e moltiplicazione. Forniscono metodi per realizzare oggetti complessi da oggetti più semplici. Questi costruttori funzionali si applicano su due oggetti più semplici, per crearne uno più complesso. 
+
+Essendo i costruttori funzionali applicati a più di due oggetti, si possono rappresentare tramite alberi, dove i nodi sono le operazioni applicate ai suoi due figli, e le foglie contengono gli oggetti più semplici, ovvero costanti o variabili intere. Risalendo l'albero fino alla radice, si possono calcolare queste espressioni per ottenere espressioni più complesse. Si può definire un tipo di dati induttivo, tenendo presente questi principi:
+\begin{minted}{ocaml}
+    type expr = 
+        | Int of int
+        | Var of string
+        | Sum of expr * expr
+        | Diff of expr * expr
+        | Mult of expr * expr
+        | Div of expr * expr
+\end{minted}
+Le variabili sono rappresentate come stringhe, ma per ottenerne il valore bisogna definire un ambiente dove è presente. Si definisce allora il tipo ambiente:
+\begin{minted}{ocaml}
+    type ambiente = (string * int) list
+\end{minted}
+Si vuole allora definire una funzione \verb|eval| che applicata ad un ambiente \verb|env| permette di valutare un'espressione $e$, restituendo l'intero corrispondente. 
+Questa funzione produce un errore se nell'ambiente non sono definiti i valori di alcune delle variabili. 
+Essendo l'ambiente realizzato da una lista si può utilizzare la funzione \verb|assoc| per determinare il valore delle variabili. Per le restanti operazioni è sufficiente applicare \verb|eval| sulle due espressioni su cui è applicata l'operazione:
+\begin{minted}{ocaml}
+    let rec eval env = function
+        | Int n -> n
+        | Var x -> List.assoc x env
+        | Sum(e1, e2) -> eval env e1 + (eval env e2)
+        | Diff(e1, e2) -> eval env e1 - (eval env e2)
+        | Mult(e1, e2) -> eval env e1 * (eval env e2)
+        | Div(e1, e2) -> eval env e1 / (eval env e2)    
+\end{minted}
+
+\subsection{Alberi Binari}
+
+Un albero è un insieme di oggetti, detti nodi, dove per ogni nodo $n$ è definita una relazione binaria $G(n,m)$ su un altro nodo $m$, dove $m$ è detto genitore e $n$ è detto figlio, tale che esiste un unico nodo radice senza genitore; ogni nodo che non sia la radice ha uno ed un solo genitore; per ogni nodo diverso dalla radice $n$ esiste un cammino dalla radice ad $n$, l'albero si dice quindi connesso. 
+Dati un qualsiasi nodo dell'albero $n$; esistono $k$ nodi $n_i$, tali che $n_1$ è la radice e $n_k$ è il nodo stesso $n$, inoltre per ogni nodo $n_i$, il nodo $n_{i+1}$ è suo genitore. Dato un cammino tra due nodi $n$ ed $m$, $n$ viene chiamato antenato e $m$ è detto discendente di $m$. Dato un cammino, il numero di nodi della sequenza viene detta lunghezza del cammino. Un nodo può essere una foglia, se non ha figli, oppure interno se ha almeno un figlio, nodi che hanno lo stesso genitore si chiamano fratelli. 
+La profondità di un nodo è la lunghezza del cammino dal nodo alla radice, mentre l'altezza di un nodo è la lunghezza del cammino dal nodo ad una foglia. 
+L'altezza dell'albero corrisponde alla profondità massima di un nodo dell'albero. La dimensione di un albero è il numero di nodi. 
+Un sottoalbero è l'insieme costituito da un nodo $n$ e tutti i suoi discendenti, dove $n$ è la radice del sottoalbero.  
+
+Un albero binario è un albero dove ogni nodo ha al massimo due figli. Si possono definire induttivamente considerando i seguenti principi:
+\begin{itemize}
+    \item Una foglia $n$ è un albero binario, con radice sé stesso
+    \item Dato un albero binario $T_0$, con radice $n_0$, aggiungendo un nuovo nodo $n$ come genitore di $n_0$, l'albero $T$ risultante è un albero binario
+    \item Dati due alberi binari $T_0$ e $T_1$ con radice rispettivamente in $n_0$ e $n_1$, aggiungendo un nuovo nodo $n$ come genitore di $n_0$ e $n_1$ si ottiene un nuovo albero binario $T$, con radice $n$
+    \item Nient'altro è un albero binario
+\end{itemize}
+
+Il tipo di un albero binario dipende dal tipo dei nodi, quindi per definirlo si utilizza il termine \verb|'a|, si potrebbe realizzare il nuovo tipo \verb|tree| come:
+\begin{minted}{ocaml}
+    type 'a tree = 
+        | Leaf of 'a
+        | One of 'a * 'a tree
+        | Two of 'a * 'a tree * 'a tree
+\end{minted}
+La dimensione di un albero si potrebbe calcolare allora come:
+\begin{minted}{ocaml}
+    let rec size = function
+        | Leaf _ -> 1
+        | One(_,t) -> 1 + size t
+        | Two(_,t1,t2) -> 1 + size t1 +  size t2    
+\end{minted}
+Ma questa definizione non è compatta, includendo nell'insieme di alberi binari, l'insieme vuoto \verb|Empty| si può definire un albero binario come avente sempre due sottoalberi, che possono essere eventualmente vuoti, ed in quel caso sarebbe una foglia:
+\begin{minted}{ocaml}
+    type 'a tree = Empty | Tr of 'a * 'a tree * 'a tree
+\end{minted}
+Si definiscono alcune funzioni di base e selettori per questo nuovo tipo:
+\begin{minted}{ocaml}
+    let is_empty = function
+        | Empty -> true
+        | _ -> false
+    ;;
+    exception EmptyTree
+    let root = function
+        | Empty -> raise EmptyTree
+        | Tr(x,_,_) -> x
+    ;;
+    let is_leaf = function
+        | Tr(x, Empty, Empty) -> true
+        | _ -> false
+    ;;
+    let leaf x = Tr(x, Empty, Empty)
+    let left = function
+        | Empty -> raise EmptyTree
+        | Tr(_,t,_) -> t
+    ;;
+    let right = function
+        | Empty -> raise EmptyTree
+        | Tr(_,_,t) -> t
+    ;;
+\end{minted}
+Si può definire la funzione \verb|size|, come precedentemente con il pattern matching, oppure usando le funzioni appena create:
+\begin{minted}{ocaml}
+    let rec size t =
+        if is_empty t then 0
+        else 1 + size (left t) + size (right t)
+\end{minted}
+
+Si vuole realizzare una funzione \verb|count: 'a tree| $\rightarrow$ \verb|('a * int) list| che restituisca una lista di coppie, contenente per ogni etichetta, unica, $x$ di un nodo dell'albero, il suo numero di occorrenze all'interno dell'albero stesso. 
+Nel caso base di un albero vuoto, questo restituisce una lista vuota \verb|[]|, mentre se l'albero non è vuoto viene applicata la funzione su entrambi i figli ed ottenute le due sottoliste si fondono insieme, aggiungendo anche la radice. 
+Questo algoritmo tuttavia non è molto efficiente, quindi si utilizza il principio dell'accumulatore come se fosse un approccio iterativo, si utilizza il risultato parziale che rappresenta il risultato dei nodi già visitati. Se un etichetta $a$ è già presente nel risultato parziale, allora si incrementa il suo contatore, mentre se non è esistente allora si aggiunge la coppia \verb|(a,1)|. Quindi si parte da una lista vuota \verb|[]| e si visita l'albero in pre-ordine. 
+Si considera una funzione ausiliaria per aggiungere o incrementare la lista risultato:
+\begin{minted}{ocaml}
+    let rec add x = function
+        | [] -> [(x,1)]
+        | (y,n)::ys -> if x = y then (y,n+1)::ys
+                       else (y,n)::(add x ys)    
+\end{minted}
+Si definisce quindi la funzione \verb|count| come:
+\begin{minted}{ocaml}
+    let rec count t =
+        let rec aux acc = function
+            | Empty -> acc
+            | Tr(x, l, r) -> aux (aux (add x acc) l) r
+        in aux [] t
+\end{minted}
+
+Si possono utilizzare alberi binari per cifrare e decifrare codici composti da due elementi, che siano numeri binari o codici morse. Nella scorsa implementazione del codice morse, si utilizzava un patter match tra tutti possibili codici morse per rappresentare le lettere dell'alfabeto. Questo può essere realizzato tramite un albero binario, dove andare a destra o sinistra indica l'aggiunta di un punto o una linea al codice risultante. In questo modo tenendo traccia del cammino effettuato si può decifrare qualsiasi sequenza morse. Scendendo a sinistra, si aggiunge un punto, a destra una linea. Supponendo di avere a disposizione un tale albero \verb|alphabet|, si vuole definire una funzione \verb|morse| che dato un carattere restituisce il codice morse cifrata correttamente:
+\begin{minted}{ocaml}
+    let morse c =  
+        let rec aux code = function
+            | Empty -> raise NotFound
+            | Tr(c', l, r) -> if c' = c then code
+                              else try aux (code^".") l
+                                   with _ -> aux (code^"-") r
+        in aux "" alphabet
+\end{minted}
+
+\clearpage
+
+\section{Alberi n-ari}
+
+Mentre gli alberi binari hanno sempre uno o due figli, gli alberi $n$-ari hanno un numero finito, arbitrario di figli. Dove ogni nodo dell'albero ha come figli una lista di alberi $n$-ari. Si possono definire induttivamente dai seguenti principi:
+\begin{itemize}
+    \item Un albero costituito da un nodo $r$ senza genitore è un albero, con radice il nodo stesso
+    \item Dati $n$ alberi $t_i$, con radice $r_i$, dato un nuovo nodo $r$, allora la struttura ottenuta aggiungendo questo nodo come genitore di tutte le radici $r_i$ è un albero $t$
+    \item Nient'altro è un albero
+\end{itemize}
+Il tipo albero $n$-ario si può definire come: 
+\begin{minted}{ocaml}
+    type 'a ntree = Tr of 'a * 'a ntree list
+\end{minted}
+Una foglia etichettata da $n$ è quindi rappresentata da \verb|Tr(n,[])|. 
+\begin{minted}{ocaml}
+    let leaf x = Tr(x, [])    
+\end{minted}
+
+\subsection{Alberi di Min-Max}
+
+Gli alberi di min-max sono degli alberi dove ad ogni foglia è assegnato un valore di utilità, il giocatore Max vuole massimizzare questo valore, mentre il giocatore Min cerca di minimizzarlo. I valori vengono assegnati solamente alle foglie, e si propagano verso l'alto, in base all'etichetta del genitore, che può essere appunto Max o Min. Se l'etichetta è Max, allora prende come valore il massimo tra i suoi figli, se è Min, il minimo. Questa propagazione si estende fino alla radice dove viene registrato il valore corrispondente. 
+
+Questi alberi sono etichettati da una coppia costituita da un tipo di giocatore, Min o Max, e da un intero, il valore numerico del nodo. 
+\begin{minted}{ocaml}
+    type player = Min | Max
+    type minmaxtree = Leaf of int | Node of (player * int) * minmaxtree list
+\end{minted}
+
+Per ogni nodo intermedio etichettato dalla coppia Max e $n$, quest'ultimo rappresenta il massimo valore numerico dei figli del nodo, analogamente se viene etichettato da Min e $m$ questo rappresenta il minimo valore numerico dei figli del nodo. Questi valori sono be assegnati, rappresentano sempre il massimo o il minimo dei valori dei figli. 
+Dato un albero Min-Max male assegnato scrivere una funzione \verb|propagate| che restituisce il corrispondente albero ben assegnato, mantenendo invariato il valore delle foglie. 
+Dato un sottoalbero $T$, questo assegna i valori agli alberi Min-Max figli, e confronta il loro valore per definire il valore del'etichetta della radice dell'albero $T$. Questo è un processo ricorsivo, il caso base è una foglia, dove il valore è quello etichettato dalla foglia. 
+Si definiscono delle funzioni ausiliarie:
+\begin{minted}{ocaml}
+    let calcola p n m = match p with
+        | Min -> min n m
+        | Max -> max n m
+    let rec mossa p = function
+        | [] -> raise Not_found
+        | x::xs -> match x with
+            | Leaf n -> (try calcola p n (mossa p xs)
+                        with _ -> n)
+            | Node((_,v),_) -> (try calcola p v (mossa p xs)
+                               with _ -> v)
+\end{minted}
+Si definisce quindi la funzione \verb|propagate| come:
+\begin{minted}{ocaml}
+    let rec propagate = function
+        | Leaf n -> Leaf n
+        | Node((p,_),l) -> let lt = List.map propagate l
+                           in Node((p, mossa p lt), lt)
+\end{minted}
+
+\clearpage
 
 \end{document}
