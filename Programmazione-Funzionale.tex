@@ -1599,4 +1599,49 @@ Nella visita in ampiezza, l'unica differenza è che i successori del nodo corren
         in search [] [s]        
 \end{minted}
 
+
+Scrivere una funzione \verb|test_connessi| che dato un grafo orientato $g$, e due nodi $n$ e $m$, determini se esiste un cammino dal nodo $n$ al nodo $m$, restituendo un booleano. Questa ricerca può essere effettuata sia con una visita in ampiezza che in profondità. Si considera il primo nodo come il nodo di partenza, e se viene raggiunto il nodo di arrivo allora restituisce \verb|true|, mentre il caso base è \verb|false|:
+\begin{minted}{ocaml}
+    let test_connessi g n m = 
+        let rec aux visited = function
+            | [] -> false
+            | x::xs -> if x = m then true
+                       else if (List.mem x visited) then aux visited xs
+                            else aux (x::visited) ((successori x g)@xs)
+        in search [] [n]
+\end{minted}
+La differenza tra i due approcci consiste nel visitare prima o meno i successori del nodo corrente. Entrambe le visite hanno la stessa complessità e sono entrambi algoritmi completi, quindi non hanno una differenza nelle prestazioni. 
+
+Per controllare se in un grafo è presente un ciclo, si può modificare la funzione precedente, modificando opportunamente il primo passo:
+\begin{minted}{ocaml}
+    let test_ciclo g n = 
+        let rec aux visited = function
+            | [] -> false
+            | x::xs -> if x = n then true
+                       else if (List.mem x visited) then aux visited xs
+                            else aux (x::visited) ((successori x g)@xs)
+        in search [] (List.filter (function x -> x <> n) (successori n g))
+\end{minted}
+
+Si consideri ora una funzione che restituisca un ciclo, ovvero un cammino che parte e finisce con $n$, se esiste, partendo dal nodo $n$, in un grafo orientato $g$. Non si considera un ciclo se un arco esce ed entra nello stesso nodo. 
+\begin{minted}{ocaml}
+    let ciclo g n = 
+        let rec from_node visited x = 
+            if List.mem x visited
+            then raise NotFound
+            else if x = n then [x]
+            else x::from_list (x::visited) (successori x g)
+        and from_list visited = function
+            | [] -> raise NotFound
+            | x::xs -> 
+                try from_node visited x
+                with NotFound -> from_list (x::visited) xs
+        in n::from_list [] (successori x g)    
+\end{minted}
+%% TODO add ciclo implementazione a lezione (forse la stessa idk)
+
+
+%% TODO rec 30/5/25: 1:24:49
+
+
 \end{document}
