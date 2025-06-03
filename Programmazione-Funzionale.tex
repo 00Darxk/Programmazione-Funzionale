@@ -1608,7 +1608,7 @@ Scrivere una funzione \verb|test_connessi| che dato un grafo orientato $g$, e du
             | x::xs -> if x = m then true
                        else if (List.mem x visited) then aux visited xs
                             else aux (x::visited) ((successori x g)@xs)
-        in search [] [n]
+        in aux [] [n]
 \end{minted}
 La differenza tra i due approcci consiste nel visitare prima o meno i successori del nodo corrente. Entrambe le visite hanno la stessa complessità e sono entrambi algoritmi completi, quindi non hanno una differenza nelle prestazioni. 
 
@@ -1620,7 +1620,7 @@ Per controllare se in un grafo è presente un ciclo, si può modificare la funzi
             | x::xs -> if x = n then true
                        else if (List.mem x visited) then aux visited xs
                             else aux (x::visited) ((successori x g)@xs)
-        in search [] (List.filter (function x -> x <> n) (successori n g))
+        in aux [] (List.filter (function x -> x <> n) (successori n g))
 \end{minted}
 
 Si consideri ora una funzione che restituisca un ciclo, ovvero un cammino che parte e finisce con $n$, se esiste, partendo dal nodo $n$, in un grafo orientato $g$. Non si considera un ciclo se un arco esce ed entra nello stesso nodo. 
@@ -1638,10 +1638,17 @@ Si consideri ora una funzione che restituisca un ciclo, ovvero un cammino che pa
                 with NotFound -> from_list (x::visited) xs
         in n::from_list [] (successori x g)    
 \end{minted}
-%% TODO add ciclo implementazione a lezione (forse la stessa idk)
 
-
-%% TODO rec 30/5/25: 1:24:49
-
+Dato un grafo $g$ ed un nodo di partenza $n$, determinare se dal nodo $n$ è raggiungibile un nodo che soddisfa un certo predicato $p$, si tratta di una variante di \verb|test_connessi|. Se è raggiungibile un nodo he soddisfa questo predicato, allora viene restituito, altrimenti viene restituita un'eccezione. È sufficiente modificare leggermente l'implementazione delle funzioni precedenti:
+\begin{minted}{ocaml}
+    exception NotFound
+    let search_nodo g n p = 
+        let rec aux visited = function
+            | [] -> raise NotFound
+            | x::xs -> if (p x) then x
+                       else if (List.mem x visited) then aux visited xs
+                            else aux (x::visited) ((successori x g)@xs)
+        in search [] [n]
+\end{minted}
 
 \end{document}
